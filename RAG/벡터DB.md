@@ -1,4 +1,4 @@
-# Chapter 12: 벡터 데이터베이스 (Vector Databases)
+# 벡터 데이터베이스 (Vector Databases)
 
 ## 개요
 
