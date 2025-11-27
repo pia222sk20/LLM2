@@ -98,4 +98,64 @@ for query in test_queries:
         preview = doc.page_content.strip()[:80].replace('\n',' ')
         print(f' {i} {source} (거리 : {score:.4f})')
         print(f'     {preview}')
-        
+
+# 다양한 검색 옵션
+print('다양한 검색 옵션')
+# 리트리버 생성
+print('기본 유사도 검색(Similarity)')
+retriver_basic =  vectorstore.as_retriever(
+    search_type = 'similarity',
+    search_kwargs = {'k' : 3}
+)
+results = retriver_basic.invoke('RAG의 장점')
+print(f'결과 수 : {len(results)}개')
+for i, doc in enumerate(results, 1):
+    print(f'    {i} {doc.metadata.get('source','unknown')}')
+
+print(f' MMR 검색(다양성 고려)')
+retriver_basic =  vectorstore.as_retriever(
+    search_type = 'mmr',
+    search_kwargs = {'k' : 3, 
+                     'fetch_k':6,  # 먼저 6개의 후보 검색
+                     'lambda_mult':0.5  # 다양성 가중치(0 = 다양성, 1=관련성)
+                     }
+)
+results = retriver_basic.invoke('RAG의 장점')
+print(f'결과 수 : {len(results)}개')
+for i, doc in enumerate(results, 1):
+    print(f'    {i} {doc.metadata.get('source','unknown')}')
+
+print('메타이터 필터링')    
+results = vectorstore.similarity_search(
+    '기술에 대해 설명해 주세요',
+    k=2,
+    filter = {'topic' : 'technique'}
+)
+print(f'결과 수 : {len(results)}개')
+for i, doc in enumerate(results, 1):
+    print(f'    {i} {doc.metadata.get('source','unknown')} topic = {doc.metadata.get('topic')}')
+
+# VectorDB 영구 저장(옵션..)
+persist_dir = './chroma_db_reg2'
+vectorstore_persistent =  Chroma.from_documents(
+    documents = doc_chunks,
+    collection_name = 'persistent_rag',
+    embedding = embedding_model,
+    persist_directory = persist_dir
+)
+
+print('vectordb 영구저장')
+print(f'저장경로 : {persist_dir}')
+print(f'저장된 청크수 : {len(doc_chunks)}')
+
+# 설정정보 저장
+config = {
+    'persist_directory' : persist_dir,
+    'collection_name' : "persistent_rag",
+    'embedding_model' : 'text-embedding-3-small',
+    'chunk_count' : len(doc_chunks)
+}
+with open('vectordb_config.pkl', 'wb') as f:
+    pickle.dump(config, f)
+
+print('설정정보 저장 완료 파일명 : vectordb_config.pkl')
