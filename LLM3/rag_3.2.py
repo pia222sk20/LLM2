@@ -138,5 +138,49 @@ print('출처 포함 RAG 체인 구성 완료')
  질문 ->    retriever           --> 관련 문서 검색
             format_docs         --> 문자열로 변환
 
-            prompt
+            prompt              --> context + question 결합
+
+            llm                 --> 답변 생성
+
+            Strparser           --> 문자열 출력
 '''
+
+print('RAG 체인 테스트')
+test_questions = [
+    "RAG란 무엇이고 어떤 장점이 있나요?",
+    "LangChain의 주요 구성 요소를 설명해주세요.",
+    "VectorDB에는 어떤 종류가 있나요?",
+]
+
+for i , question in enumerate(test_questions,1):
+    print(f'테스트 {i} : {question}')
+    print('-'*60)
+    star_time = time.time()
+    # RAG 체인 실행
+    asnwer = rag_chain.invoke(question)
+    elapsed = time.time() - star_time
+    print(f'답변 : {asnwer}')
+    # 참조문서
+    retrieved_docs = retriever.invoke(question)
+    sources = [doc.metadata.get('source','unknown')  for doc in retrieved_docs]
+    print(f'참조 문서 : {sources}')
+    print(f'소요된 시간 : {elapsed}')
+
+# 고급 RAG 사용
+print('RAG 고급 패턴')
+
+print('query transformaton ')
+query_transform_prompt = ChatPromptTemplate.from_template(
+    '''다음 질문을 검색에 더 적합한 형태로 변환해주세요.
+    키워드 중심으로 명확하게 바꿔주세요
+
+    원본질문:{question}
+
+    변환된 검색어 (한 줄로):'''
+)
+query_chain = query_transform_prompt | llm | StrOutputParser()
+
+orginal_question = 'RAG가 뭔지 좀 알려주세요'
+transformed = query_chain.invoke({'question':orginal_question })
+print(f'    원본 : {orginal_question}')
+print(f'    변환 : {transformed}')
