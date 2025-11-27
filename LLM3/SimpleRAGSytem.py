@@ -37,7 +37,7 @@ class SimpleRAGSystem:
             ('human','문맥:\n{context}\n\n질문:{question}\n\n답변:')
 
         ])
-        return(
+        return( 
             {'context':self.retriever|self._fotmat_docs,'question':RunnablePassthrough()}
             | prompt
             | self.llm
@@ -55,12 +55,17 @@ class SimpleRAGSystem:
         sources = self.retriever.invoke(question)
         return {
             'answer':answer,
-            'source':[ doc.metadata.get('source','unknown') for doc in sources]
+            'sources':[ doc.metadata.get('source','unknown') for doc in sources]
         }
 
 if __name__ == '__main__':
-    vectorstore = 
-    llm = 
+    persist_dir = './chroma_db_reg2'
+    vectorstore = Chroma(
+        persist_directory = persist_dir,
+        collection_name = 'persistent_rag',
+        embedding_function = OpenAIEmbeddings(model = 'text-embedding-3-small')
+    )
+    llm = ChatOpenAI( model = 'gpt-4o-mini', temperature=0 )
     rag_system = SimpleRAGSystem(vectorstore, llm)
 
     print("래퍼 클래스 테스트:")
