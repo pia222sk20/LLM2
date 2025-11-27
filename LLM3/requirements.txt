@@ -1,0 +1,11 @@
+python-dotenv>=1.0.0          # 환경변수 로드 (.env 파일)
+langchain>=0.3.0              # LangChain 핵심 프레임워크
+langchain-openai>=0.2.0       # OpenAI 연동
+langchain-community>=0.3.0    # 커뮤니티 도구 (TextLoader, PyPDFLoader 등)
+langchain-text-splitters>=0.3.0  # 텍스트 분할기
+langchain-chroma>=0.1.0       # ChromaDB 연동
+langchain-core>=0.3.0         # LangChain 핵심 모듈
+langgraph>=0.2.0              # LangGraph 상태 기반 에이전트
+pydantic>=2.0.0               # 데이터 검증
+numpy>=1.24.0                 # 수치 연산
+chromadb>=0.5.0 
