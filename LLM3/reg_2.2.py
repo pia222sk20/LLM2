@@ -74,7 +74,7 @@ for i, (sent, emb) in enumerate(zip(test_sentences[1:],embeddings[1:]), 1):
 start_time = time.time()
 # chromaDB 생성(인메모리)
 vectorstore = Chroma.from_documents(
-    document = doc_chunks,
+    documents = doc_chunks,
     collection_name = 'reg_2.2',
     embedding = embedding_model
 )
@@ -82,3 +82,20 @@ elapsed = time.time() - start_time
 print(f'VectorDB 구축 완료')
 print(f'저장된 청크수 : {len(doc_chunks)}')
 print(f'소요시간 : {elapsed:.2f}')
+
+# 테스트 질문
+test_queries = [
+    'RAG란 무엇인가요?',
+    'VectorDB에는 어떤 종류가 있나요?',
+    'LangChain의 구성 요소는?'
+]
+for query in test_queries:
+    print(f'질문 : {query}')
+    # 유사문서 검색 상위 2개
+    results = vectorstore.similarity_search_with_score(query, k=2)
+    for i, (doc, score) in enumerate(results, 1):
+        source = doc.metadata.get('source','unknown')
+        preview = doc.page_content.strip()[:80].replace('\n',' ')
+        print(f' {i} {source} (거리 : {score:.4f})')
+        print(f'     {preview}')
+        
