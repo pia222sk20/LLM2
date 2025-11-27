@@ -5,4 +5,4 @@ ch06/sample.csv
 "ch12/glove_data/glove.6B.zip" 
 ch12/glove_data/glove.6B.zip
 ch13/training_checkpoints/
-openai/KoAlpaca.jsonl
+LLM3/chroma_db_reg2

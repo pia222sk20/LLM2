@@ -148,8 +148,8 @@ print('출처 포함 RAG 체인 구성 완료')
 print('RAG 체인 테스트')
 test_questions = [
     "RAG란 무엇이고 어떤 장점이 있나요?",
-    "LangChain의 주요 구성 요소를 설명해주세요.",
-    "VectorDB에는 어떤 종류가 있나요?",
+    "LangChain의 주요 구성 요소를 설명해주세요.",    
+    'VectorDB의 종류를 알려주세요'
 ]
 
 for i , question in enumerate(test_questions,1):

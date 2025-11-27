@@ -71,5 +71,5 @@ if __name__ == '__main__':
     print("래퍼 클래스 테스트:")
     result = rag_system.ask_with_sources("VectorDB의 종류를 알려주세요")
     print(f"   질문: VectorDB의 종류를 알려주세요")
-    print(f"   답변: {result['answer'][:100]}...")
+    print(f"   답변: {result['answer']}...")
     print(f"   출처: {result['sources']}")
