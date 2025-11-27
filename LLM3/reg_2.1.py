@@ -29,3 +29,16 @@ embeddings = HuggingFaceEmbeddings(
 )
 vector = embeddings.embed_query('안녕하세요')
 print(len(vector))
+
+# VectorDB : 
+from langchain_chroma import Chrorma
+from langchain_openai import OpenAIEmbeddings
+# 임베딩 모델 설정
+embeddings = OpenAIEmbeddings(model ='text-embdding-3-small')
+
+# 인메모리 VectorDB 생성
+# vectorstore = Chroma.from_documents(
+#     documents = doc_chunks
+#     embedding=embeddings
+#     collection_name = "my_collection"
+# )
