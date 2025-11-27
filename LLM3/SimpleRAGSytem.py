@@ -57,3 +57,14 @@ class SimpleRAGSystem:
             'answer':answer,
             'source':[ doc.metadata.get('source','unknown') for doc in sources]
         }
+
+if __name__ == '__main__':
+    vectorstore = 
+    llm = 
+    rag_system = SimpleRAGSystem(vectorstore, llm)
+
+    print("래퍼 클래스 테스트:")
+    result = rag_system.ask_with_sources("VectorDB의 종류를 알려주세요")
+    print(f"   질문: VectorDB의 종류를 알려주세요")
+    print(f"   답변: {result['answer'][:100]}...")
+    print(f"   출처: {result['sources']}")
