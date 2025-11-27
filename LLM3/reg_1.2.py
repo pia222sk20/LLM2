@@ -98,3 +98,33 @@ print(f'청크별 미리보기')
 for i, chunk in enumerate(char_splits[:3],1):
     preview = chunk.page_content.strip()[:80].replace('\n',' ')
     print(f' 청크{i} ( {len(chunk.page_content)}자: {preview}  )')
+
+# RecursiveCharacterTextSplitter
+print(f'RecursiveCharacterTextSplitter 적용')
+recursive_splitter =  RecursiveCharacterTextSplitter(
+     chunk_size=300,
+     chunk_overlap=50,
+     separators = ['\n\n','\n','.',' ',''],
+     length_function=len
+)
+# 모든 문서를 청크로 분할
+doc_splits = recursive_splitter.split_documents(sample_documents)
+print(f'원본 문서 : {len(sample_documents)}개')
+print(f'RecursiveCharacterTextSplitter 결과 : {len(doc_splits)}개 청크')
+
+# 청킹 결과 저장 (pickle 사용)
+import pickle
+# 최종 분할설정(중간크기)
+final_splitter = RecursiveCharacterTextSplitter(
+    chunk_size = 300,
+    chunk_overlap = 50,
+    separators = ['\n\n','\n','.',' ',''],
+)
+final_chunks = final_splitter.split_documents(sample_documents)
+# 파일로저장
+output_path = 'chunks_output.pkl'
+with open(output_path, 'wb') as f:
+    pickle.dump(final_chunks,f)
+print(f'저장완료')    
+print(f'파일명 : {output_path}')    
+print(f'청크수 : {len(final_chunks)}')
