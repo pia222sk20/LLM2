@@ -1,4 +1,6 @@
 # 백터검색 BM25 키워드 검색을 RRF 알고리즘으로 결합
+# pip install rank_bm25
+
 from typing import List
 from langchain_core.documents import Document
 from langchain_community.retrievers import BM25Retriever
@@ -53,7 +55,7 @@ class FusionRetrieval:
         result = []
         for doc_text, score in  sorted_docs[:self.retriever_k]:
             for doc in self.documents:
-                if doc.paget_content.startswith(doc_text):
+                if doc.page_content.startswith(doc_text):
                     result.append(doc)
                     break
         print(f'    RRF 통합결과 : {len(result)}개 문서')
@@ -79,7 +81,15 @@ class FusionRetrieval:
 
 if __name__ == '__main__':
     from langchain_community.document_loaders import TextLoader
-    from langchain_text.splitters import RecursiveCharacterTextSplitter
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+    import os
+    import warnings    
+    from dotenv import load_dotenv
+    # 경고 메세지 삭제
+    warnings.filterwarnings('ignore')
+    load_dotenv()
+    # openapi key 확인
+    api_key = os.getenv('OPENAI_API_KEY')
     print('문서 준비')
     loader = TextLoader('document.txt', encoding='utf-8')
     documents = loader.load()
@@ -93,7 +103,8 @@ if __name__ == '__main__':
     print(f'백터스토어 준비')
     from langchain_openai import OpenAIEmbeddings
     from langchain_chroma import Chroma
-    embeddings =  OpenAIEmbeddings()
+    import os
+    embeddings =  OpenAIEmbeddings(model = 'text-embedding-3-small')
     vectorstore = Chroma.from_documents(
         chunks,
         embeddings,
@@ -108,6 +119,3 @@ if __name__ == '__main__':
     fusion = FusionRetrieval(chunks,3)
     fusion_docs = fusion.fusion_retrieval(question,retrieval)
     print(f'fusion 검색 결과 : {len(fusion_docs)}개')
-
-
-
