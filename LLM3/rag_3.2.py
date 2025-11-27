@@ -167,7 +167,7 @@ for i , question in enumerate(test_questions,1):
     print(f'소요된 시간 : {elapsed}')
 
 # 고급 RAG 사용
-print('RAG 고급 패턴')
+print('RAG 성능향상을 위한 고급 패턴')
 
 print('query transformaton ')
 query_transform_prompt = ChatPromptTemplate.from_template(
