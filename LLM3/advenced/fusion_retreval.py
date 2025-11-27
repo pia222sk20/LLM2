@@ -4,6 +4,7 @@
 from typing import List
 from langchain_core.documents import Document
 from langchain_community.retrievers import BM25Retriever
+from langchain_core.output_parsers import StrOutputParser
 
 class FusionRetrieval:
     '''Fusion Retrieval 기법을 구현한 클래스'''
@@ -59,7 +60,7 @@ class FusionRetrieval:
                     result.append(doc)
                     break
         print(f'    RRF 통합결과 : {len(result)}개 문서')
-        print(f'    RRF는 각 검색 방식의 순위 역수를 합산해서 최종 순서를 결정')
+        print(f'    RRF는 각 검색 방식의 순위 역수를 합산해서 최종 순서를 결정')        
         return result
     def get_detail_fusion_info(self,question:str, vector_retrieval) -> dict:
         '''
@@ -118,4 +119,7 @@ if __name__ == '__main__':
     print('Fusion Retrieval사용')
     fusion = FusionRetrieval(chunks,3)
     fusion_docs = fusion.fusion_retrieval(question,retrieval)
-    print(f'fusion 검색 결과 : {len(fusion_docs)}개')
+    print(f'fusion 검색 결과 개수 : {len(fusion_docs)}개')
+    print('검색 결과.....')    
+    for fusion_doc in fusion_docs:
+        print(fusion_doc.page_content)
