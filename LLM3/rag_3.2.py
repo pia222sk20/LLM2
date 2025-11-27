@@ -119,7 +119,7 @@ print(format_docs_with_source(test_docs[:2]))
 # RAG 체인 구성
 # 기본 RAG 체인(LCEL 사용)
 rag_chain = (
-    {'context': retriever | format_docs, 'quetion':RunnablePassthrough()}
+    {'context': retriever | format_docs, 'question':RunnablePassthrough()}
     | basic_prompt
     | llm
     | StrOutputParser()
