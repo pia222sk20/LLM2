@@ -112,6 +112,7 @@ doc_splits = recursive_splitter.split_documents(sample_documents)
 print(f'원본 문서 : {len(sample_documents)}개')
 print(f'RecursiveCharacterTextSplitter 결과 : {len(doc_splits)}개 청크')
 
+
 # 청킹 결과 저장 (pickle 사용)
 import pickle
 # 최종 분할설정(중간크기)
