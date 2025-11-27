@@ -115,3 +115,28 @@ def format_docs_with_source(docs):
 test_docs = retriever.invoke('RAG란 무엇인가요?')
 print('검색된 문서 포멧팅 예시')
 print(format_docs_with_source(test_docs[:2]))
+
+# RAG 체인 구성
+# 기본 RAG 체인(LCEL 사용)
+rag_chain = (
+    {'context': retriever | format_docs, 'quetion':RunnablePassthrough()}
+    | basic_prompt
+    | llm
+    | StrOutputParser()
+)
+print('기본 RAG 체인 구성 완료')
+# 출처 포함 RAG 체인
+rag_chain_with_source =  (
+    {'context': retriever | format_docs_with_source, 'quetion':RunnablePassthrough()}
+    | basic_prompt
+    | llm
+    | StrOutputParser()
+)
+print('출처 포함 RAG 체인 구성 완료')
+'''
+체인구조
+ 질문 ->    retriever           --> 관련 문서 검색
+            format_docs         --> 문자열로 변환
+
+            prompt
+'''
