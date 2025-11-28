@@ -81,5 +81,9 @@ def ask_question(question):
     sources =  [ os.path.basename(doc.metadata.get('soucrce', 'unknown')) for doc in retrieved_docs ]
     return answer, sources
 
-# 각 질문에 대하 답변 생성
-
+# 각 질문에 대한 답변 생성
+for i, question in enumerate(test_question, 1):
+    print('question_{i} : {question}')
+    answer, sources = ask_question(question)
+    print(f'answer : {answer}')
+    print(f'sources : {sources}')
