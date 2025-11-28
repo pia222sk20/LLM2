@@ -24,7 +24,8 @@ loader = DirectoryLoader(
     path = path,
     glob = '**/*.txt',
     loader_cls = TextLoader,
-    loader_kwargs = {'encoding':'utf-8'}
+    loader_kwargs = {'encoding':'utf-8'},
+    # recursive=True
 )
 docs = loader.load()
 # 청크
@@ -50,6 +51,12 @@ retriever = vectorstore.as_retriever(
 llm = ChatOpenAI(model='gpt-4o-mini',temperature=0)
 
 # 문맥압축 프롬프트
+
+
+question = 'VectorDB의 종류를 알려주세요'
+
+# 1. 문맥압축 프롬프트를 실행
+compress_prompt = ChatPromptTemplate.from_template(
 '''
 다음 문서에서 질문과 관련된 부분만 추출하세요.
 관련 없는 부분은 제외하고, 관련 있는 내용만 그대로 출력하세요.
@@ -60,3 +67,27 @@ llm = ChatOpenAI(model='gpt-4o-mini',temperature=0)
 
 관련 내용:
 '''
+)
+
+docs = retriever.invoke(question)
+compressed = []
+sources = []
+for doc in docs:
+    document = doc.page_content
+    compress_chain = compress_prompt | llm | StrOutputParser()
+    compress_result = compress_chain.invoke({'question' :question, 'document': document })
+
+    if "관련 없음" not in compress_result:
+        compressed.append(compress_result) 
+        sources.append( os.path.basename(doc.metadata.get('source',"") ))
+
+context = '\n\n---\n\n'.join(compressed)    
+
+# 최종 답변
+rag_prompt = ChatPromptTemplate.from_messages([
+    ('system','제공된 문맥을 바탕으로 한국어로 답변하세요'),
+    ('human', '문맥:\n{context}\n\n질문:{question}\n\n답변:')
+])
+rag_prompt_chain = rag_prompt | llm | StrOutputParser()
+result = rag_prompt_chain.invoke({'context' : context, 'question':question})
+print(result, sources)
