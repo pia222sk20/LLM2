@@ -1,7 +1,4 @@
 # 3. Self-RAG               (자기 보정) - 문서 관련성 평가
-# 4. Contextual Compressioin (문맥 압축) - 관련 부분만 추출
-# 5. Fusion Retrieval       (융합 검색) - 키워 + 벡터 검색 결합
-
 import os
 import warnings
 from dotenv import load_dotenv
@@ -79,12 +76,16 @@ def filler_relevant_docs(docs, question):
 # 관련성을 평가후 답변생성
 
 #1. 문서를 검색(리트리버를 이용해서 )
-question = 'RAG의 장점은 무엇인가요?'
+question = '환율이 급격히 상승한 이유는?'
 docs = retriever.invoke(question)
 print(f'리트리버가 찾은 문서수 : {len(docs)}개')
 # 관련성 평가
 relevant_docs =  filler_relevant_docs(docs,question)
 print(f' relevant_docs 개수 : {len(relevant_docs)}개')
+
+if not relevant_docs:
+    raise ValueError('관련있는 문서가 없어서 답변을 종료합니다.다른 질문을 입력하세요')
+
 
 def format_docs(docs):
     '''문서를 문자열로 포멧팅'''
@@ -99,6 +100,6 @@ rag_prompt = ChatPromptTemplate.from_messages([
 ])
 answer_chain = rag_prompt | llm | StrOutputParser()
 answer = answer_chain.invoke({'context' : context, 'question' : question})
-print(f' 답변 : {answer}')
+print(f' \n\n답변 : {answer}')
 sources = [ os.path.basename(doc.metadata.get('source',"")) for doc in relevant_docs]
 print(f' 근거 : {sources}')
