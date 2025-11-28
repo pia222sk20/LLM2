@@ -79,7 +79,7 @@ def filler_relevant_docs(docs, question):
 # 관련성을 평가후 답변생성
 
 #1. 문서를 검색(리트리버를 이용해서 )
-question = ''
+question = 'RAG의 장점은 무엇인가요?'
 docs = retriever.invoke(question)
 print(f'리트리버가 찾은 문서수 : {len(docs)}개')
 # 관련성 평가
@@ -91,3 +91,13 @@ def format_docs(docs):
     return '\n\n---\n\n'.join([ doc.page_content for doc in docs ])
 
 context = format_docs(relevant_docs)
+# 답변 생성
+# RAG프롬프트
+rag_prompt = ChatPromptTemplate.from_messages([
+    ('system','제공된 문맥을 바탕으로 한국어로 답변하세요'),
+    ('human', '문맥:\n{context}\n\n질문:{question}\n\n답변:')
+])
+answer = rag_prompt.invoke({'context' : context, 'question' : question})
+print(f' 답변 : {answer}')
+sources = [ os.path.basename(doc.metadata.get('source',"")) for doc in relevant_docs]
+print(f' 근거 : {sources}')
