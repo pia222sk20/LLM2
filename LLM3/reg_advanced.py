@@ -102,3 +102,13 @@ def query_transformation(question):
     answer_chain = rag_prompt | llm | StrOutputParser()
     answer = answer_chain.invoke({'context':context, 'question':question})
     return answer, [ os.path.basename(d.metadata.get('source','unknown')) for d in docs ]
+
+test_question = [
+    'RAG 어떻게 쓰나요?',
+    'LangGraph 뭐하는 거야?',
+]
+
+for q in test_question:
+    print(f'Question : {q}')
+    answer, sources = query_transformation(q)
+    print(f'answer : {answer}  sources : {sources}')
