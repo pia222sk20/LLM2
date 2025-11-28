@@ -17,7 +17,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 script_dir = os.path.dirname(os.path.abspath(__file__) )
-docs_path = os.path.join(script_dir,'sample_docs', 'langgraph_rag')
+docs_path = os.path.join(script_dir,'advenced','sample_docs', 'langgraph_rag')
 print(f'docs paths : {docs_path}')
 
 loader = DirectoryLoader(
@@ -78,12 +78,12 @@ def ask_question(question):
     '''질문에 대한 답변생성'''
     answer = rag_chain.invoke(question)
     retrieved_docs =  retriever.invoke(question)
-    sources =  [ os.path.basename(doc.metadata.get('soucrce', 'unknown')) for doc in retrieved_docs ]
+    sources =  [ os.path.basename(doc.metadata.get('source', 'unknown')) for doc in retrieved_docs ]
     return answer, sources
 
 # 각 질문에 대한 답변 생성
 for i, question in enumerate(test_question, 1):
-    print('question_{i} : {question}')
+    print(f'question_{i} : {question}')
     answer, sources = ask_question(question)
     print(f'answer : {answer}')
     print(f'sources : {sources}')
