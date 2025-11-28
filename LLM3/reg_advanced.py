@@ -108,10 +108,10 @@ test_question = [
     'LangGraph 뭐하는 거야?',
 ]
 
-for q in test_question:
-    print(f'Question : {q}')
-    answer, sources = query_transformation(q)
-    print(f'answer : {answer}  sources : {sources}')
+# for q in test_question:
+#     print(f'Question : {q}')
+#     answer, sources = query_transformation(q)
+#     print(f'answer : {answer}  sources : {sources}')
 
 # 2. Multi-Query            (다중 질의) - 검색 범위 확대
 # 다중 쿼리 생성 프롬프트
@@ -127,3 +127,5 @@ multi_query_prompt =  ChatPromptTemplate.from_template('''
 multi_query_chain = multi_query_prompt | llm | StrOutputParser()
 
 # multi_query_chain 실행해서 결과출력
+result = multi_query_chain.invoke( {'question': 'RAG 어떻게 쓰나요?'} )
+print(result)
