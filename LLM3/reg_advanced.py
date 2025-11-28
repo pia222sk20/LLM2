@@ -112,3 +112,18 @@ for q in test_question:
     print(f'Question : {q}')
     answer, sources = query_transformation(q)
     print(f'answer : {answer}  sources : {sources}')
+
+# 2. Multi-Query            (다중 질의) - 검색 범위 확대
+# 다중 쿼리 생성 프롬프트
+multi_query_prompt =  ChatPromptTemplate.from_template('''
+다음 질문에 대해 3가지 다른 관점의 검색 쿼리를 생성하세요.
+각 쿼리는 새 줄로 구분하여 출력하세요
+번호나 설명 없이 쿼리만 출력하세요
+                                                       
+원본 질문 : {question}
+다른 관점의 쿼리들:
+''')
+# lag chain 구성  LCEL
+multi_query_chain = multi_query_prompt | llm | StrOutputParser()
+
+# multi_query_chain 실행해서 결과출력
