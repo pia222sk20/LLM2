@@ -97,7 +97,8 @@ rag_prompt = ChatPromptTemplate.from_messages([
     ('system','제공된 문맥을 바탕으로 한국어로 답변하세요'),
     ('human', '문맥:\n{context}\n\n질문:{question}\n\n답변:')
 ])
-answer = rag_prompt.invoke({'context' : context, 'question' : question})
+answer_chain = rag_prompt | llm | StrOutputParser()
+answer = answer_chain.invoke({'context' : context, 'question' : question})
 print(f' 답변 : {answer}')
 sources = [ os.path.basename(doc.metadata.get('source',"")) for doc in relevant_docs]
 print(f' 근거 : {sources}')
