@@ -1,0 +1,9 @@
+LangGraph는 LangChain 위에 구축된 상태 기반 에이전트 프레임워크입니다.
+
+LangGraph의 핵심 개념:
+1. State(상태): 에이전트의 현재 상태를 나타내는 데이터 구조
+2. Node(노드): 실제 작업을 수행하는 함수
+3. Edge(엣지): 노드 간의 제어 흐름을 정의
+4. Conditional Edge: 조건에 따라 다른 노드로 분기
+
+LangGraph는 순환(Cycle)을 지원하여 복잡한 에이전트 워크플로우를 구현할 수 있습니다.

@@ -1,0 +1,8 @@
+LangChain은 대규모 언어 모델(LLM)을 활용한 애플리케이션 개발을 위한 프레임워크입니다.
+
+LangChain의 주요 구성 요소:
+1. Models: 다양한 LLM 제공자(OpenAI, Anthropic 등)와 통합
+2. Prompts: 프롬프트 템플릿 관리 및 최적화
+3. Chains: 여러 구성 요소를 연결하는 파이프라인
+4. Memory: 대화 맥락을 유지하기 위한 메모리 시스템
+5. Indexes: 문서 검색을 위한 인덱싱 도구
