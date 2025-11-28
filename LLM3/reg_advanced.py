@@ -126,6 +126,34 @@ multi_query_prompt =  ChatPromptTemplate.from_template('''
 # lag chain 구성  LCEL
 multi_query_chain = multi_query_prompt | llm | StrOutputParser()
 
-# multi_query_chain 실행해서 결과출력
-result = multi_query_chain.invoke( {'question': 'RAG 어떻게 쓰나요?'} )
-print(result)
+def multi_query_rag(question):
+    '''다중 쿼리로 검색해서 결과 통일'''
+    # 1.다중 쿼리 생성
+    queries_text = multi_query_chain.invoke( {'question': 'RAG 어떻게 쓰나요?'} )
+    queries = [ q.strip() for q in  queries_text.strip().split('\n') if q.strip()]
+    # 각 쿼리(질문)으로 검색하고 결과를 통합 (중복제거)
+    all_docs = []
+    seen_contents = set()
+    for query in queries:
+        docs = base_retriever.invoke(query)
+        for doc in docs:
+            if doc.page_content not in seen_contents:
+                seen_contents.add(doc.page_content)
+                all_docs.append(doc)
+    print(f'검색된 문서의 개수 : {len(all_docs)}')
+    # 답변 생성  상위 3개만 사용
+    context = format_docs(all_docs[:3])
+    answer_chain = rag_prompt | llm | StrOutputParser()
+    answer = answer_chain.invoke({'context' : context, 'question':question})
+    return answer, [ os.path.basename(d.metadata.get('source','unknown')) for d in all_docs ]
+     
+# 테스트
+test = [
+    'LangChain 시작하는 방법'
+]
+for q in test:
+    print(f'question : {q}')
+    answer, sources = multi_query_rag(q)
+    print(f'answer : {answer}')
+    print(f'answer : {sources}')
+
