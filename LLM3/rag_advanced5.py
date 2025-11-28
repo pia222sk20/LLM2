@@ -86,7 +86,17 @@ sorted_docs =  sorted(
     fusion_scores.items(), key=lambda x : x[1], reverse=True
 )
 
-print(f'fusion docs 결과 : {sorted_docs}')
+# print(f'fusion docs 결과 상위 3개 : {sorted_docs[:3]}')
+docs = []
+for doc,score in sorted_docs[:3]:
+    docs.append(doc)
+
+inputs = '\n\n---\n\n'.join(docs)
+
+rag_prompt_chain = rag_prompt | llm | StrOutputParser()
+result = rag_prompt_chain.invoke({'context':inputs, 'question':question})
+print(result)
+
 
 
 
