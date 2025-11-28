@@ -98,8 +98,8 @@ def query_transformation(question):
     # 2. 변환된 질문으로 검색
     docs = base_retriever.invoke(transformed)
     context = format_docs(docs)
-
     answer_chain = rag_prompt | llm | StrOutputParser()
+    
     answer = answer_chain.invoke({'context':context, 'question':question})
     return answer, [ os.path.basename(d.metadata.get('source','unknown')) for d in docs ]
 
