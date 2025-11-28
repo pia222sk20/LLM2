@@ -48,3 +48,15 @@ retriever = vectorstore.as_retriever(
     search_kwargs = {'k' : 3}
 )
 llm = ChatOpenAI(model='gpt-4o-mini',temperature=0)
+
+# 문맥압축 프롬프트
+'''
+다음 문서에서 질문과 관련된 부분만 추출하세요.
+관련 없는 부분은 제외하고, 관련 있는 내용만 그대로 출력하세요.
+관련 내용이 없으면 "관련 없음"이라고 출력하세요.
+
+문서: {document}
+질문: {question}
+
+관련 내용:
+'''
