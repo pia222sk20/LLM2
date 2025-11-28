@@ -98,5 +98,3 @@ def query_transformation(question):
     answer_chain = rag_prompt | llm | StrOutputParser()
     answer = answer_chain.invoke({'context':context, 'question':question})
     return answer, [ os.path.basename(d.metadata.get('source','unknown')) for d in docs ]
-
-
