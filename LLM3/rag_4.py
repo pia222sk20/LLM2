@@ -30,8 +30,8 @@ document = loader.load()
 print(f'읽은 문서의수 : {len(document)}')
 
 text_splitter =  RecursiveCharacterTextSplitter(
-    chunk_size = 300,
-    chunk_overlap = 50,
+    chunk_size = 100,
+    chunk_overlap = 20,
     separators= ['\n\n','\n','.',' ','']
 )
 # 스플릿 = 청킹
