@@ -67,32 +67,36 @@ def format_docs(docs):
     '''문서를 문자열로 포멧팅'''
     return '\n\n---\n\n'.join([ doc.page_content for doc in docs ])
 
+# 질문 재작성 프롬프트
+rewrite_prompt=  ChatPromptTemplate.from_template('''
+다음 질문을 검색에 더 적합한 형태로 변환해 주세요.
+키워드 중심으로 명화기하게 바꿔주세요
+변환된 검색어만 출력하세요
+
+원본 질문: {qeustion}
+변환된 검색어:
+''')
+
+rewrite_chain =  rewrite_prompt | llm | StrOutputParser()
+
+# RAG프롬프트
+rag_prompt = ChatPromptTemplate.from_messages([
+    ('system','제공된 문맥을 바탕으로 한국어로 답변하세요'),
+    ('human', '문맥:\n{context}\n\n질문:{question}\n\n답변:')
+])
 
 def query_transformation(question):
     '''Query Transformation  (질문 변화) - 검색 최적화'''
     print(' 1. Query Transformation  (질문 변화) - 검색 최적화')
     print('사용자 질문을 검색에 최적화된 형태로 변환합니다.\n')
 
-    # 질문 재작성 프롬프트
-    rewrite_prompt=  ChatPromptTemplate.from_template('''
-    다음 질문을 검색에 더 적합한 형태로 변환해 주세요.
-    키워드 중심으로 명화기하게 바꿔주세요
-    변환된 검색어만 출력하세요
-
-    원본 질문: {qeustion}
-    변환된 검색어:
-    ''')
-
-    rewrite_chain =  rewrite_prompt | llm | StrOutputParser()
-
-    # RAG프롬프트
-    rag_prompt = ChatPromptTemplate.from_messages([
-        ('system','제공된 문맥을 바탕으로 한국어로 답변하세요'),
-        ('human', '문맥:\n{context}\n\n질문:{question}\n\n답변:')
-    ])
-
-    # 질문 변환
-    docs = rewrite_chain.invoke({'qeustion' : question})
+    # 1. 질문 변환
+    transformed = rewrite_chain.invoke({'qeustion' : question})
+    print(f'원본 질문 : {question}')
+    print(f'transformed 질문 : {transformed}')
+    
+    # 2. 변환된 질문으로 검색
+    docs = base_retriever.invoke(transformed)
     context = format_docs(docs)
 
     answer_chain = rag_prompt | llm | StrOutputParser()
