@@ -1,8 +1,6 @@
 # 1. Query Transformation  (질문 변화) - 검색 최적화
 # 2. Multi-Query            (다중 질의) - 검색 범위 확대
-# 3. Self-RAG               (자기 보정) - 문서 관련성 평가
-# 4. Contextual Compressioin (문맥 압축) - 관련 부분만 추출
-# 5. Fusion Retrieval       (융합 검색) - 키워 + 벡터 검색 결합
+
 
 import os
 import warnings
@@ -129,7 +127,7 @@ multi_query_chain = multi_query_prompt | llm | StrOutputParser()
 def multi_query_rag(question):
     '''다중 쿼리로 검색해서 결과 통일'''
     # 1.다중 쿼리 생성
-    queries_text = multi_query_chain.invoke( {'question': 'RAG 어떻게 쓰나요?'} )
+    queries_text = multi_query_chain.invoke( {'question': question} )
     queries = [ q.strip() for q in  queries_text.strip().split('\n') if q.strip()]
     # 각 쿼리(질문)으로 검색하고 결과를 통합 (중복제거)
     all_docs = []
@@ -141,7 +139,7 @@ def multi_query_rag(question):
                 seen_contents.add(doc.page_content)
                 all_docs.append(doc)
     print(f'검색된 문서의 개수 : {len(all_docs)}')
-    # 답변 생성  상위 3개만 사용
+    # 리트리버 답변 생성 추출된 문서의 상위 3개만 사용
     context = format_docs(all_docs[:3])
     answer_chain = rag_prompt | llm | StrOutputParser()
     answer = answer_chain.invoke({'context' : context, 'question':question})
