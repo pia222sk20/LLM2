@@ -83,4 +83,11 @@ question = ''
 docs = retriever.invoke(question)
 print(f'리트리버가 찾은 문서수 : {len(docs)}개')
 # 관련성 평가
+relevant_docs =  filler_relevant_docs(docs,question)
+print(f' relevant_docs 개수 : {len(relevant_docs)}개')
 
+def format_docs(docs):
+    '''문서를 문자열로 포멧팅'''
+    return '\n\n---\n\n'.join([ doc.page_content for doc in docs ])
+
+context = format_docs(relevant_docs)
