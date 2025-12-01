@@ -94,3 +94,24 @@ def conditional_graph():
 
     app = graph.compile()
 
+    # 테스트 1 : 내부문서에 있는 질문
+    print('\n[테스트1] 내부 문서가 존재하는 경우')
+    result1 = app.invoke({
+        'question' : '회사 AI 전략은?',
+        'documents':[],
+        'search_type':'',
+        'answer':''
+    })
+    print(f"답변 : {result1['answer']}")
+    # 테스트 2 : 내부문서에 없는 질문
+    print('\n[테스트2] 내부 문서가 없는 경우 -> 웹 검색')
+    result2 = app.invoke({
+        'question' : '오늘날씨는??',
+        'documents':[],
+        'search_type':'',
+        'answer':''
+    })
+    print(f"답변 : {result2['answer']}")
+
+# 조건부 분기 테스트
+conditional_graph()
