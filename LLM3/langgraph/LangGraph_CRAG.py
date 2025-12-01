@@ -132,7 +132,7 @@ def grade_documents_node(state:CGRAState) -> dict:
         "grade_results": grade_results
     }
 
-def web_search_node(state: CRAGState) -> dict:
+def web_search_node(state: CGRAState) -> dict:
     """
     웹 검색 노드 (시뮬레이션)
     
