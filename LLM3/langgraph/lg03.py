@@ -128,10 +128,17 @@ def langgraph_rag():
         '오늘 서울 날씨는 어떤가요?'  # 내부 문서에 없음
     ]
     # 각 질문에 대한 출력
+    for question in test_qeustion:        
+        result = app.invoke({
+            'question':question,
+            'documents' : [],
+            'doc_scores' : [],
+            'search_type' : "",
+            'answer' : ""
+        })
 
-
-    print(f'\n 답변 :\n {}')
-    print(f'\n 검색유형 :{}, 참조문서 : {}')
+        print(f'\n 답변 :\n {result['answer']}')
+        print(f'\n 검색유형 :{result['search_type']}, 참조문서 : {len(result['documents'])}개')
 
 
 if __name__ == '__main__':
