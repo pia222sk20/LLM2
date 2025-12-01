@@ -34,14 +34,69 @@ def langgraph_rag():
         search_type : str
         answer : str
     # 문서 로드    
+    # C:\LLM\LLM3\advenced\sample_docs\langgraph_rag\langchain_intro.txt
     path = 'C:/LLM/LLM3/advenced/sample_docs'
     loader = DirectoryLoader(
         path = path,
         glob = '**/*.txt',
         loader_cls = TextLoader,
-        loader_kwargs = {'encoding':'utf-8'}
+        loader_kwargs = {'encoding':'utf-8'},        
     )
     docs = loader.load()
+
+    # VectorDB 구축
+    text_spliter =  RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=50,separators= ['\n\n','\n','.',' ',''])
+    splits = text_spliter.split_documents(docs)
+
+    vectorstores = Chroma.from_documents(
+        documents=splits,
+        embedding=OpenAIEmbeddings(model='text-embedding-3-small'),
+        collection_name='langgraph'
+    )
+    print(f'VectorDB 구축 완료 청크개수 : {len(splits)}')
+    # llm 초기화
+    llm = ChatOpenAI(model='gpt-4o-mini',temperature=0)
+
+    # 노드 함수들
+        # 리트리버 함수
+    def retrieve_node(state:RAGState)->dict:
+        '''검색 노드'''
+    def grade_documents_node(state:RAGState)->dict:
+        '''문서평가 노드'''
+    def web_search_node(stae:RAGState)->dict:
+        '''웹검색 노드(시뮬레이션)'''
+    def generate_node(state:RAGState)->dict:
+        '''생성노드'''
+    # 조건 함수
+    def decide_to_generate(state:RAGState)-> Literal['generate','web_search']:
+        '''조건부 분기 함수'''    
+    # 그래프 구축(add_node  add_edge  add_conditional_edges)
+    graph = StateGraph(RAGState)
+    graph.add_node('retriever',retrieve_node)
+    graph.add_node('grade',grade_documents_node)
+    graph.add_node('web_search',web_search_node)
+    graph.add_node('generate',generate_node)
+
+    graph.add_edge(START, 'retriever')
+    graph.add_edge('retriever', 'grade')
+    graph.add_conditional_edges(
+        'grade',
+        decide_to_generate,
+        { 'generate':'generate', 'web_search': 'web_search'}
+    )
+    graph.add_edge('web_search', 'generate')
+    graph.add_edge('generate', END)
+    # 그래프 컴파일
+    app = graph.compile()
+    # 그래프 invoke(질문)
+    test_qeustion = [
+        'LangGraph의 핵심 개념을 설명해 주세요',
+        'RAG란 무엇인가요?',
+        '오늘 서울 날씨는 어떤가요?'  # 내부 문서에 없음
+    ]
+
+
+
 
 
 
