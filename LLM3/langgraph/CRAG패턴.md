@@ -14,7 +14,7 @@
 
 ### 1.1 CRAG란?
 
-**Corrective RAG (CRAG)**는 검색된 문서의 품질을 자체적으로 평가하고, 필요시 **자기 교정(Self-Correction)**을 수행하는 고급 RAG 패턴입니다.
+**Corrective RAG (CRAG)** 는 검색된 문서의 품질을 자체적으로 평가하고, 필요시 **자기 교정(Self-Correction)** 을 수행하는 고급 RAG 패턴입니다.
 
 ```text
 기존 RAG:
