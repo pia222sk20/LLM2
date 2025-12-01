@@ -23,3 +23,27 @@ load_dotenv()
 
 if not os.environ.get('OPENAI_API_KEY'):
     raise ValueError('key check....')
+
+class CGRAState(TypedDict):
+    question : str
+    documents : List[Document]
+    web_search_needed : str   # 웹검색 여부(yes / no)
+    context : str
+    answer : str
+    grade_results : List[str]   #각 문서의 평가 결과
+
+# 문서
+path = 'C:/LLM/LLM3/advenced/sample_docs'
+loader = DirectoryLoader(
+    path = path,
+    glob = '**/*.txt',
+    loader_cls = TextLoader,
+    loader_kwargs = {'encoding':'utf-8'},        
+)
+docs = loader.load()
+
+# 텍스트 분할
+
+# 임베딩 및 VectorDB
+
+# 리트리버 설정
