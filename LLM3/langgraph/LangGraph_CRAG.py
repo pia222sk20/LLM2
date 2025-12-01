@@ -27,13 +27,14 @@ if not os.environ.get('OPENAI_API_KEY'):
 class CGRAState(TypedDict):
     question : str
     documents : List[Document]
+    filtered_documents: List[Document] # 관련성 평가를 통과한 문서
     web_search_needed : str   # 웹검색 여부(yes / no)
     context : str
     answer : str
     grade_results : List[str]   #각 문서의 평가 결과
 
 # 문서
-path = 'C:/LLM/LLM3/advenced/sample_docs'
+path = r'C:\2.Lecture\LLM2\LLM3\advenced\sample_docs'
 loader = DirectoryLoader(
     path = path,
     glob = '**/*.txt',
@@ -51,7 +52,7 @@ doc_splits = text_splitter.split_documents(docs)
 vectorstore = Chroma.from_documents(
     documents=doc_splits,
     collection_name='crag_collection',
-    embedding=OpenAIEmbeddings(model='text')
+    embedding=OpenAIEmbeddings(model='text-embedding-3-small')
 )
 
 # 리트리버 설정 
@@ -190,10 +191,10 @@ def generate_node(state: CGRAState) -> dict:
     답변 생성 노드
     필터링된 문서(내부 문서 + 웹 검색 결과)를 바탕으로 답변을 생성합니다.
     """
-    print("\n   💬 [GENERATE 노드] 답변 생성 중...")
+    print("\n   [GENERATE 노드] 답변 생성 중...")
     
     question = state["question"]
-    filtered_documents = state["filtered_documents"]
+    filtered_documents = state['filtered_documents']
     
     # 컨텍스트 구성
     context = "\n\n---\n\n".join([doc.page_content for doc in filtered_documents])
@@ -290,3 +291,53 @@ workflow.add_edge("generate", END)
 
 # 그래프 컴파일
 app = workflow.compile()
+
+# 테스트 시나리오
+test_cases = [
+    {
+        "question": "LangGraph의 핵심 개념을 설명해주세요.",
+        "expected": "내부 문서에서 답변 가능 → 웹 검색 불필요"
+    },
+    {
+        "question": "CRAG 패턴의 장점은 무엇인가요?",
+        "expected": "내부 문서에서 답변 가능 → 웹 검색 불필요"
+    },
+    {
+        "question": "최신 GPT-5 모델의 특징은 무엇인가요?",
+        "expected": "내부 문서에 없음 → 웹 검색 필요"
+    }
+]
+
+for i, test in enumerate(test_cases, 1):
+    print(f"\n{'━' * 70}")
+    print(f" 테스트 {i}: {test['question']}")
+    print(f"   예상 시나리오: {test['expected']}")
+    print(f"{'━' * 70}")
+    
+    # 초기 상태
+    initial_state = {
+        "question": test["question"],
+        "documents": [],
+        "filtered_documents": [],
+        "web_search_needed": "No",
+        "context": "",
+        "answer": "",
+        "grade_results": []
+    }
+    
+    # 그래프 실행
+    print("\n CRAG 워크플로우 실행 중...")
+    
+    final_state = None
+    for output in app.stream(initial_state):
+        for node_name, node_output in output.items():
+            print(f"   노드 '{node_name}' 실행 완료")
+        final_state = output
+    
+    # 결과 출력
+    if "generate" in final_state:
+        answer = final_state["generate"]["answer"]
+    else:
+        answer = "답변을 생성할 수 없습니다."
+    
+    print(f"\n 최종 답변:\n{answer}")
