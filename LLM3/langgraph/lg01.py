@@ -98,3 +98,25 @@ state.update(update2)
 
 print('노드실행 완료')
 
+# Edg 정의 및 조건부 분기
+
+# 조건부 엣지를 위한 결정 함수
+# Literal 타입힌트 반드시 이 값들중에서 하나를 반환해야 한다는 의미
+def decide_next_step(state:dict)-> Literal['generate','web_search']:
+    '''문서 관련성에 따라 다음 단계 결정'''
+    documents = state.get('document', [])
+    if documents and len(documents) > 0:
+        print(f'문서있음--> generate 노드로 이동')
+        return 'generate'
+    else:
+        print(f'문서없음--> web_search 노드로 이동')
+        return 'web_search'
+
+# 케이스 1 : 문서가 있는경우
+start_with_docs = {'documents':['doc1','doc2']}
+next_node = decide_next_step(start_with_docs)
+print(f'다음노드 : {next_node}')
+
+start_without_docs = {'documents':[]}
+next_node = decide_next_step(start_with_docs)
+print(f'다음노드 : {next_node}')
