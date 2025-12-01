@@ -127,6 +127,12 @@ def langgraph_rag():
         'RAG란 무엇인가요?',
         '오늘 서울 날씨는 어떤가요?'  # 내부 문서에 없음
     ]
+    # 각 질문에 대한 출력
+
+
+    print(f'\n 답변 :\n {}')
+    print(f'\n 검색유형 :{}, 참조문서 : {}')
+
 
 if __name__ == '__main__':
     langgraph_rag()
