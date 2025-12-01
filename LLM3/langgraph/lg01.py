@@ -60,7 +60,7 @@ state['answer'] = 'RAG는 검색 증강 생성 기술입니다.'
 class SimpleState(TypedDict):
     '''단순화된 형태'''
     question : str
-    document : List[Document]
+    documents : List[Document]
     answer: str
 
 # 노드 함수 1 : 검색 노드
@@ -74,3 +74,27 @@ def retrieve_node(state:SimpleState)->dict:
         Document(page_content='', metadata={})
     ]
     return {'document':mock_documents}
+
+# 노드 함수2 : 생성 노드
+def generate_node(state:SimpleState) -> dict:
+    '''생성노드 : 검색된 문서를 기반으로 답변 생성'''
+    documents = state['documents']
+    # 시뮬레이션 : 실제로는 LLM 호출
+    context = '\n'.join([ doc.page_content for doc in documents])
+    mock_answer = f'문서기반 답변 : {context[:50]}'
+    return {'answer' : mock_answer}
+
+# 노드 실행 시뮬레이션
+state:SimpleState = {'question':'LangGraph란', 'documents':[],'answer':''}
+print(f"[초기상태] question = {state['question']}, docs = {len(state['documents'])}")
+
+# step1 : 검색노드 실행
+update1 =  retrieve_node(state)
+state.update(update1)
+
+# step2 : 생성 노드 실행
+update2 = generate_node(state)
+state.update(update2)
+
+print('노드실행 완료')
+
