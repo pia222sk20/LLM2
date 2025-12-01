@@ -43,10 +43,10 @@ def conditional_graph():
         '''내부 문서 검색'''
         question = state['question']
         documents = []
-        for keyword,docs in INTERNAL_DOCS:
+        for keyword,docs in INTERNAL_DOCS.items():
             if keyword in question:
                 documents.extend(docs)
-        return {'document':documents,'search_type':'internal'}
+        return {'documents':documents,'search_type':'internal'}
     
     def web_search_node(state:ConditionalState) -> dict:
         '''웹 검색(시뮬레이션)'''
