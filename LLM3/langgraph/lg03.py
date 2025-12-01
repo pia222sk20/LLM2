@@ -77,13 +77,32 @@ def langgraph_rag():
         print(f"[grade] {len(state['documents'])}개 --> {len(filtered_docs)}개 문서 유지")
         return {'documents' : filtered_docs, 'doc_scores':filtered_scores}
 
-    def web_search_node(stae:RAGState)->dict:
+    def web_search_node(state:RAGState)->dict:
         '''웹검색 노드(시뮬레이션)'''
+        web_result = Document(
+            page_content=f"웹 검색 결과 : {state['question']}에 대한 최신 결과 입니다.",
+            metadata = {'source':'web_search'}
+        )
+        return {'document':[web_result],'doc_scores':[0.8], 'search_type':'web'}
+
     def generate_node(state:RAGState)->dict:
-        '''생성노드'''
+        '''생성노드'''  
+        context = '\n'.join([ doc.page_content for doc in state['documents']])
+        prompt = ChatPromptTemplate.from_messages(
+            ('system','제공된 문맥을 바탕으로 한국어로 답변하세요'),
+            ('human', '문맥:\n{context}\n\n질문:{question}\n\n답변:')
+        )
+        chain = prompt | llm | StrOutputParser()
+        answer = chain.invoke({'context':context, 'question' : state['question'] })
+        return {'answer':answer}
     # 조건 함수
     def decide_to_generate(state:RAGState)-> Literal['generate','web_search']:
         '''조건부 분기 함수'''    
+        if state['documents'] and len(state['documents']) > 0:
+            return 'generate'
+        else:
+            return 'web_search'
+
     # 그래프 구축(add_node  add_edge  add_conditional_edges)
     graph = StateGraph(RAGState)
     graph.add_node('retriever',retrieve_node)
