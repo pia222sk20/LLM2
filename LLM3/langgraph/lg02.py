@@ -80,7 +80,7 @@ def conditional_graph():
     graph.add_node('web_search', web_search_node)
     graph.add_node('generate', generate_node)
 
-    graph.add_edge(START,'internal_seach')
+    graph.add_edge(START,'internal_search')
     graph.add_conditional_edges(
         'internal_search',
         decide_search_type,
