@@ -46,4 +46,4 @@ docs = loader.load()
 
 # 임베딩 및 VectorDB
 
-# 리트리버 설정
+# 리트리버 설정 
