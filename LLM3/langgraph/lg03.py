@@ -63,7 +63,9 @@ def langgraph_rag():
         '''검색 노드'''
         quesiton = state['question']
         docs_with_scores = vectorstores.similarity_search_with_score(quesiton, k = 3)
-        documents,scores =  [ (doc, 1-score) for doc,score in docs_with_scores]
+        documents =  [ doc for doc,score in docs_with_scores]
+        scores =  [ 1-score for doc,score in docs_with_scores]
+
         print(f' [retriever] {len(documents)}개 문서 검색됨')        
         return {'documents': documents, 'doc_scores':scores, 'search_type':'internal'}   # state 업데이트
 
@@ -88,10 +90,10 @@ def langgraph_rag():
     def generate_node(state:RAGState)->dict:
         '''생성노드'''  
         context = '\n'.join([ doc.page_content for doc in state['documents']])
-        prompt = ChatPromptTemplate.from_messages(
+        prompt = ChatPromptTemplate.from_messages([
             ('system','제공된 문맥을 바탕으로 한국어로 답변하세요'),
             ('human', '문맥:\n{context}\n\n질문:{question}\n\n답변:')
-        )
+        ])
         chain = prompt | llm | StrOutputParser()
         answer = chain.invoke({'context':context, 'question' : state['question'] })
         return {'answer':answer}
