@@ -89,17 +89,29 @@ korean_splitter =  RecursiveCharacterTextSplitter(
     length_function = len,
     is_seperator_regex=False
 )
-# 문서분할
-doc_chunks = korean_splitter.split_documents()
-
-
 
 # Step 1 일반적인 chaing을 이용한 RAG
 # 문서로딩
-
+file_path = r'C:\2.Lecture\LLM2\LLM3\PDF\pdf_doc01.pdf'
+loader = DoclingPDFLoader(file_path)
+docs = loader.load()
 # 청킹
+doc_splits = korean_splitter.split_documents(docs)
+print(f'청킹수 : {len(docs)}')
+
 # 벡터DB
 # 리트리버
+from langchain_chroma import Chroma
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+vectorstore = Chroma.from_documents(
+    documents=doc_splits,
+    collection_name='crag_collection',
+    embedding=OpenAIEmbeddings(model='text-embedding-3-small')
+)
+retriever = vectorstore.as_retriever(search_kwargs={'k':3})
+
+
+
 # 사용자 질문에 대한 리트리버를 수행 context
 # context로 LLM을 위한 프폼프트 작성
 # LLM정의
