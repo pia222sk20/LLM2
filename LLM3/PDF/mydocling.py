@@ -113,15 +113,20 @@ vectorstore = Chroma.from_documents(
     embedding=OpenAIEmbeddings(model='text-embedding-3-small')
 )
 retriever = vectorstore.as_retriever(search_kwargs={'k':3})
-question = '실제 교통 정체상황에서 상호 간섭에 대해서 알려줘'
+question = '사용된 데이터셋에 종류와 특징 등 어떤건지 알려줘'
 # 사용자 질문에 대한 리트리버를 수행 context
 documents = retriever.invoke('question')
-print(f'리트리버가 찾은 context 수 : {len(documents)}')
+print(f'리트리버가 찾은 documents 수 : {len(documents)}')
 context = '\n\n---\n\n'.join( doc.page_content for doc in documents)
+print(f'context : {context}')
 # context로 LLM을 위한 프폼프트 작성
 from langchain_core.prompts import ChatPromptTemplate
 prompt = ChatPromptTemplate.from_template('''
-사용자의 질문에 대한 답을 주어진 context 에서만 찾고 해당 사항이 없으면 관련 없음이라고 출력할것
+당신은 제공된 문맥을 바탕으로 질문에 답변하는 AI 어시스턴트입니다
+규칙:
+1. 제공된 문맥 내의 정보를 우선적으로 사용하세요.
+2. 답변은 한국어로 명확하고 구조화되게 작성하세요.
+3. 확실하지 않은 정보는 추측하지 마세요
 context : 
 {context}
 
@@ -132,7 +137,7 @@ context :
 출력:
 ''')
 # LLM정의
-llm = ChatOpenAI(model='gpt-4o-mini',temperature=0)
+llm = ChatOpenAI(model='gpt-4o-mini',temperature=0.3)
 # 체인
 from langchain_core.output_parsers import StrOutputParser
 chain = prompt | llm | StrOutputParser()
