@@ -96,13 +96,12 @@ korean_splitter =  RecursiveCharacterTextSplitter(
 
 # Step 1 일반적인 chaing을 이용한 RAG
 # 문서로딩
-file_path = r'C:\2.Lecture\LLM2\LLM3\PDF\pdf_doc01.pdf'
+file_path = r'C:\2.Lecture\LLM2\LLM3\PDF\test.pdf'
 loader = DoclingPDFLoader(file_path)
 docs = loader.load()
-print(f'docs : {docs}')
 # 청킹
 doc_splits = korean_splitter.split_documents(docs)
-print(f'청킹수 : {len(docs)}')
+print(f'청킹수 : {len(doc_splits)}')
 
 # 벡터DB
 # 리트리버
@@ -114,8 +113,6 @@ vectorstore = Chroma.from_documents(
     embedding=OpenAIEmbeddings(model='text-embedding-3-small')
 )
 retriever = vectorstore.as_retriever(search_kwargs={'k':3})
-
-
 
 # 사용자 질문에 대한 리트리버를 수행 context
 # context로 LLM을 위한 프폼프트 작성
