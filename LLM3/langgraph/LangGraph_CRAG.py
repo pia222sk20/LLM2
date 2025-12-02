@@ -147,9 +147,9 @@ def web_search_node(state: CGRAState) -> dict:
     
     # 웹 검색 시뮬레이션 (실제로는 Tavily API 등 사용)
     # 실제 구현 예시:
-    # from langchain_community.tools.tavily_search import TavilySearchResults
-    # web_search = TavilySearchResults(k=3)
-    # web_results = web_search.invoke({"query": question})
+    from langchain_community.retrievers import TavilySearchAPIRetriever
+    web_search = TavilySearchAPIRetriever(k=3)
+    web_results = web_search.invoke(question)
     
     # 시뮬레이션된 웹 검색 결과
     simulated_web_results = f"""
@@ -178,7 +178,11 @@ def web_search_node(state: CGRAState) -> dict:
     
     # 기존 필터링된 문서에 웹 검색 결과 추가
     filtered_docs = state.get("filtered_documents", [])
-    filtered_docs.append(web_doc)
+    # filtered_docs.append(web_doc)  # 시뮬레이션은 web_doc 사용
+    # api 사용
+    for doc in web_results:        
+        filtered_docs.append(doc)
+
     
     print("   웹 검색 완료! 결과가 문서에 추가됨")
     
