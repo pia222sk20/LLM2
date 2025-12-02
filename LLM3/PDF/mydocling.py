@@ -71,3 +71,40 @@ class SimplePDFLoader:
             doc.metadata['loader'] = 'pypdf'
         return documents
 
+
+# Step 1 일반적인 chaing을 이용한 RAG
+# 문서로딩
+# 청킹
+# 벡터DB
+# 리트리버
+# 사용자 질문에 대한 리트리버를 수행 context
+# context로 LLM을 위한 프폼프트 작성
+# LLM정의
+# 체인
+# 실행
+
+# step2  랭그래프를 이용한 RAG
+
+
+
+
+# 스플리터 
+korean_splitter =  RecursiveCharacterTextSplitter(
+    chunk_size = 500,
+    chunk_overlap = 100,
+    separators=[
+        '\n##'      # 마크다운 2단계 헤더
+        "\n###"     # 마크다운 3단계 헤더
+        '\n\n',
+        '\n',
+        '다.',
+        '요.',
+        '니다.',
+        ' ',
+        '',        
+    ],
+    length_function = len,
+    is_seperator_regex=False
+)
+# 문서분할
+doc_chunks = korean_splitter.split_documents()
