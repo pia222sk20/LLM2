@@ -1,6 +1,6 @@
 from langchain_community.document_loaders import PyPDFLoader
 
-loader = PyPDFLoader("document.pdf")
+loader = PyPDFLoader("document_table.pdf")
 documents = loader.load()  # 페이지별 Document 리스트
 for doc in documents:
     print(f"소스 : {doc.metadata['source']}")
