@@ -10,6 +10,10 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from typing import List, Literal
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
 # powershell 에서 
 
 # setx HF_HUB_DISABLE_SYMLINKS 1
@@ -87,7 +91,7 @@ korean_splitter =  RecursiveCharacterTextSplitter(
         '',        
     ],
     length_function = len,
-    is_seperator_regex=False
+    is_separator_regex=False
 )
 
 # Step 1 일반적인 chaing을 이용한 RAG
@@ -95,6 +99,7 @@ korean_splitter =  RecursiveCharacterTextSplitter(
 file_path = r'C:\2.Lecture\LLM2\LLM3\PDF\pdf_doc01.pdf'
 loader = DoclingPDFLoader(file_path)
 docs = loader.load()
+print(f'docs : {docs}')
 # 청킹
 doc_splits = korean_splitter.split_documents(docs)
 print(f'청킹수 : {len(docs)}')
