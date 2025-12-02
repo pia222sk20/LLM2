@@ -33,7 +33,7 @@ class CGRAState(TypedDict):
     answer : str
     grade_results : List[str]   #각 문서의 평가 결과
 
-# 문서
+# Step 1 문서
 path = r'C:\2.Lecture\LLM2\LLM3\advenced\sample_docs'
 loader = DirectoryLoader(
     path = path,
@@ -43,19 +43,20 @@ loader = DirectoryLoader(
 )
 docs = loader.load()
 
-# 텍스트 분할
+# Step 2 텍스트 분할 (청크)
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=300, chunk_overlap = 50
 )
 doc_splits = text_splitter.split_documents(docs)
-# 임베딩 및 VectorDB
+
+# Step 3 임베딩 및 VectorDB
 vectorstore = Chroma.from_documents(
     documents=doc_splits,
     collection_name='crag_collection',
     embedding=OpenAIEmbeddings(model='text-embedding-3-small')
 )
 
-# 리트리버 설정 
+# Step 4 리트리버 설정 
 retriever = vectorstore.as_retriever(search_kwargs={'k':3})
 
 print(f' {len(doc_splits)}개 청크로 VectorDB 구축 완료')
