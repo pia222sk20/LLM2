@@ -165,3 +165,22 @@ print(f'벡터차원 : {len(ko_orberta_vectors)}')
 print(f'처리시간 : {elapsed:.2f}')
 
 # VectorDB 구축 , 검색 테스트
+# 청킹(텍스트 분할)
+text_spliter =  RecursiveCharacterTextSplitter(
+    chunk_size=300,
+    chunk_overlap=50
+)
+doc_chunks = text_spliter.split_documents(korean_documents)
+print(f'문서분할 완료 : {len(doc_chunks)}개 청크')
+
+# VectorDB 구축
+vectorStore =  Chroma.from_documents(
+    documents=doc_chunks,
+    collection_name='korean_docs',
+    embedding=hf_embeddings  # BGM-M3 모델
+)
+print('검색 테스트 결과')
+for query in test_texts:
+    results = vectorStore.similarity_search(query)
+    print(f'질문 : {query}')
+    print(f'검색결과 : {results}')
