@@ -157,12 +157,12 @@ def hybrid_search():
 
     # Dense 검색 설정
     embeddings = OpenAIEmbeddings(model = 'text-embedding-3-small')
-    vectrostore = Chroma.from_documents(
+    vectorstore = Chroma.from_documents(
         documents=documents,
         embedding=embeddings,
         collection_name='hybrid_example'
     )
-    dense_retriever = vectrostore.as_retriever(search_kwargs={'k':3})
+    dense_retriever = vectorstore.as_retriever(search_kwargs={'k':3})
 
     # Sparse 검색 설정(BM25)
     # 간단한 한국어 토큰화(공백 + 조사 분리)
@@ -181,11 +181,68 @@ def hybrid_search():
     bm25 = BM25Okapi(tokenized_docs)
     
     def sparse_search(query:str, k:int=3)->List[Document]:        
+        '''BM25 기반 검색'''        
         tokenized_query = simple_korean_tokenize(query)
         scores = bm25.get_scores(tokenized_query)        
         top_indices = np.argsort(scores)[::-1][:k]
         return [documents[i] for i in top_indices]
     
+    # 하이브리드 검색
+    def hybrid_search(query:str, dense_weight: float = 0.7, k:int=3) -> List[Document]:
+        '''Dense + Sparse 하이브리드 검색
+        Args:
+            query : 검색
+            dense_weight : Dense 검색 가중치
+            k : 반환할 문서 수
+        '''
+        sparse_weight = 1 - dense_weight
+        # Dense 검색
+        dense_result = dense_retriever.invoke(query)
+        # Sparse 검색
+        sparse_results = sparse_search(query, k=k)
+        # RRF(Reciprocal Rank Fusion) 점수 계산
+        doc_scores = {}
+        for rank,doc in enumerate(dense_result):
+            doc_id = doc.metadata.get('id')
+            if doc_id not in doc_scores:
+                doc_scores[doc_id] = {'doc':doc, 'score':0}
+            doc_scores[doc_id]['score'] += dense_weight + (1/(rank+1))
+        for rank,doc in enumerate(sparse_results):
+            doc_id = doc.metadata.get('id')
+            if doc_id not in doc_scores:
+                doc_scores[doc_id] = {'doc':doc, 'score':0}
+            doc_scores[doc_id]['score'] += sparse_weight + (1/(rank+1))
+        # 점수순 정렬
+        sorted_results = sorted(  doc_scores.values(), key = lambda x: x['score'], reverse=True  )
+        return [ item["doc"] for item in sorted_results[:k]]
+    # --- 테스트 ---
+    test_queries = [
+        "에이전트 프레임워크",     # Dense에 유리 (의미)
+        "ChromaDB",              # Sparse에 유리 (정확한 키워드)
+        "RAG 검색 생성"          # 하이브리드에 유리
+    ]
+    print("\n[검색 방식별 비교]")
+    for query in test_queries:
+        print(f"\n 질문: '{query}'")
+        
+        # Dense만
+        dense_results = dense_retriever.invoke(query)
+        print(f"   [Dense] {dense_results[0].page_content[:40]}...")
+        
+        # Sparse만
+        sparse_results = sparse_search(query, k=1)
+        print(f"   [Sparse] {sparse_results[0].page_content[:40]}...")
+        
+        # 하이브리드
+        hybrid_results = hybrid_search(query, dense_weight=0.7, k=1)
+        print(f"   [Hybrid] {hybrid_results[0].page_content[:40]}...")
+    
+    # 정리
+    vectorstore.delete_collection()
+    
+    print("\n 하이브리드 검색 완료!")
+    return hybrid_search
+
 
 
 if __name__ == '__main__':
