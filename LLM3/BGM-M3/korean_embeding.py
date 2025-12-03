@@ -143,7 +143,7 @@ embeding_models = (
     KoreanEmbeddingModels.get_openai(), KoreanEmbeddingModels.get_bge_m3(), 
     KoreanEmbeddingModels.get_korean_roberta(),KoreanEmbeddingModels.get_multilingual_e5()
 )
-embeding_model_names = ('openai','bge_me', 'ko-roberta','multilingual-e5'))
+embeding_model_names = ('openai','bge_me', 'ko-roberta','multilingual-e5')
 
 def evaluate_embeding_models(embeingmodel:KoreanEmbeddingModels, test_texts:List[str],model_name:str):
     start_time = time()
@@ -172,7 +172,7 @@ for idx, model in enumerate(embeding_models):
     # VectorDB 구축
     vectorStore =  Chroma.from_documents(
         documents=doc_chunks,
-        collection_name='korean_docs',
+        collection_name=f'collection-{idx}',
         embedding=model
     )
     print(f'\n\n{embeding_model_names[idx]} 검색 테스트 결과')
