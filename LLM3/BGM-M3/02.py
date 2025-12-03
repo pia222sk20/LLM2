@@ -155,7 +155,7 @@ def hybrid_search():
         Document(page_content="ChromaDB는 로컬에서 사용할 수 있는 벡터 데이터베이스입니다.", metadata={"id": 5}),
     ]
 
-    # Dense 검색 설정
+    # Dense 검색 설정 - BGM-M3 오픈소스로도 변경 가능
     embeddings = OpenAIEmbeddings(model = 'text-embedding-3-small')
     vectorstore = Chroma.from_documents(
         documents=documents,
@@ -247,6 +247,7 @@ def hybrid_search():
 
 if __name__ == '__main__':
     check_evnironment()
-    embedding_basic()
-    cosine_simularity()
-    bm25_sparse_search()
+    # embedding_basic()
+    # cosine_simularity()
+    # bm25_sparse_search()
+    hybrid_search()
