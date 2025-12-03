@@ -21,7 +21,7 @@ load_dotenv()
 
 def check_evnironment():
     '''환경변수 확인'''
-    if not os.getenv.get('OPENAI_API_KEY'):
+    if not os.getenv('OPENAI_API_KEY'):
         raise ValueError('check openai key....')
     print('키 확인 완료')
 
@@ -140,4 +140,56 @@ def bm25_sparse_search():
             print(f'    {scores[idx]:.2f}  {documents[idx][:40]}...')
     return bm25,documents,simple_korean_tokenize
 
+
+
+# 하이브리드 검색 구현
+def hybrid_search():
+    '''Dense(의미 기반)와 Sparse(키워드 기반) 검색을 결합'''
+
+    # 문서데이터 (실제는 전용 Loader를 사용(예 TextLoader  PdfLoader 등) 또는 사용자가 직접 수집한 데이터를 Document 객체로 만들어서 리스트형태)
+    documents = [
+        Document(page_content="LangGraph는 LangChain 위에 구축된 상태 기반 에이전트 프레임워크입니다.", metadata={"id": 1}),
+        Document(page_content="RAG(Retrieval-Augmented Generation)는 검색과 생성을 결합한 기술입니다.", metadata={"id": 2}),
+        Document(page_content="Python은 데이터 과학과 AI 개발에 널리 사용됩니다.", metadata={"id": 3}),
+        Document(page_content="벡터 임베딩은 텍스트를 수치 벡터로 변환합니다.", metadata={"id": 4}),
+        Document(page_content="ChromaDB는 로컬에서 사용할 수 있는 벡터 데이터베이스입니다.", metadata={"id": 5}),
+    ]
+
+    # Dense 검색 설정
+    embeddings = OpenAIEmbeddings(model = 'text-embedding-3-small')
+    vectrostore = Chroma.from_documents(
+        documents=documents,
+        embedding=embeddings,
+        collection_name='hybrid_example'
+    )
+    dense_retriever = vectrostore.as_retriever(search_kwargs={'k':3})
+
+    # Sparse 검색 설정(BM25)
+    # 간단한 한국어 토큰화(공백 + 조사 분리)
+    def simple_korean_tokenize(text:str) ->List[str]:
+        '''공백으로 분리 후 각 단어를 2-gram으로 분리'''
+        tokens = []
+        for word in text.split():
+            tokens.append(word)
+            # 2글자 이상이면 n-gram도 추가
+            if len(word) >=2:
+                for i in range(len(word) -1):
+                    tokens.append(word[i:i+2])
+        return tokens
+    doc_texts =  [ doc.page_content for doc in documents]
+    tokenized_docs = [  simple_korean_tokenize(text) for text in doc_texts]
+    bm25 = BM25Okapi(tokenized_docs)
     
+    def sparse_search(query:str, k:int=3)->List[Document]:        
+        tokenized_query = simple_korean_tokenize(query)
+        scores = bm25.get_scores(tokenized_query)        
+        top_indices = np.argsort(scores)[::-1][:k]
+        return [documents[i] for i in top_indices]
+    
+
+
+if __name__ == '__main__':
+    check_evnironment()
+    embedding_basic()
+    cosine_simularity()
+    bm25_sparse_search()
