@@ -148,3 +148,20 @@ print(f'벡터차원 : {len(openai_vectors)}')
 print(f'처리시간 : {elapsed:.2f}')
 
 # BGE-M3 모델 테스트
+hf_embeddings = KoreanEmbeddingModels.get_bge_m3()
+start_time = time()
+bgem3_vectors = openai_embeddings.embed_documents(test_texts)
+elapsed = time() - start_time
+print('hf_embeddings 임베딩')
+print(f'벡터차원 : {len(bgem3_vectors)}')
+print(f'처리시간 : {elapsed:.2f}')
+
+ko_orberta = KoreanEmbeddingModels.get_korean_roberta()
+start_time = time()
+ko_orberta_vectors = ko_orberta.embed_documents(test_texts)
+elapsed = time() - start_time
+print('ko_orberta_vectors 임베딩')
+print(f'벡터차원 : {len(ko_orberta_vectors)}')
+print(f'처리시간 : {elapsed:.2f}')
+
+# VectorDB 구축 , 검색 테스트
