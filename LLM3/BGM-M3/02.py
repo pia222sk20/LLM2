@@ -243,11 +243,92 @@ def hybrid_search():
     print("\n 하이브리드 검색 완료!")
     return hybrid_search
 
-
+def embedding_evaluation():
+    """임베딩 품질 평가"""    
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    
+    # 테스트 데이터: (질문, 관련 문서, 비관련 문서)
+    test_pairs = [
+        (
+            "Python 코드 작성법",
+            "Python은 간결한 문법으로 코드를 작성할 수 있는 프로그래밍 언어입니다.",
+            "오늘 날씨가 매우 좋습니다."
+        ),
+        (
+            "한국어 임베딩 모델",
+            "BGE-M3는 한국어를 포함한 다국어 임베딩을 지원합니다.",
+            "피자는 이탈리아 음식입니다."
+        ),
+        (
+            "RAG 시스템 구축",
+            "RAG는 검색과 생성을 결합하여 더 정확한 답변을 제공합니다.",
+            "축구는 세계에서 가장 인기 있는 스포츠입니다."
+        ),
+    ]
+    
+    def cosine_sim(vec1, vec2):
+        """코사인 유사도"""
+        vec1 = np.array(vec1)
+        vec2 = np.array(vec2)
+        return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+    
+    def evaluate_embedding_model(test_data: List[Tuple[str, str, str]]) -> dict:
+        """
+        임베딩 모델 품질 평가
+        
+        평가 기준:
+        - 관련 문서가 비관련 문서보다 유사도가 높으면 정답
+        """
+        correct = 0
+        results = []
+        
+        for query, positive, negative in test_data:
+            q_vec = embeddings.embed_query(query)
+            p_vec = embeddings.embed_query(positive)
+            n_vec = embeddings.embed_query(negative)
+            
+            pos_sim = cosine_sim(q_vec, p_vec)
+            neg_sim = cosine_sim(q_vec, n_vec)
+            
+            is_correct = pos_sim > neg_sim
+            if is_correct:
+                correct += 1
+            
+            results.append({
+                "query": query[:20],
+                "pos_sim": pos_sim,
+                "neg_sim": neg_sim,
+                "correct": is_correct
+            })
+        
+        accuracy = correct / len(test_data)
+        return {"accuracy": accuracy, "details": results}
+    
+    # 평가 실행
+    eval_result = evaluate_embedding_model(test_pairs)
+    
+    print("\n[임베딩 품질 평가 결과]")
+    print(f"   정확도: {eval_result['accuracy']:.1%}")
+    print()
+    
+    for detail in eval_result["details"]:
+        status = "ok" if detail["correct"] else "bed"
+        print(f"   {status} '{detail['query']}...'")
+        print(f"      관련 유사도: {detail['pos_sim']:.4f}")
+        print(f"      비관련 유사도: {detail['neg_sim']:.4f}")
+    
+    print("\n   해석:")
+    print("   - 정확도 90%+: 우수한 임베딩 모델")
+    print("   - 정확도 70%+: 사용 가능")
+    print("   - 정확도 70%-: 다른 모델 검토 필요")
+    
+    print("\n 임베딩 품질 평가 완료!")
+    return evaluate_embedding_model
 
 if __name__ == '__main__':
     check_evnironment()
     # embedding_basic()
     # cosine_simularity()
     # bm25_sparse_search()
-    hybrid_search()
+    # hybrid_search()
+    embedding_evaluation()
