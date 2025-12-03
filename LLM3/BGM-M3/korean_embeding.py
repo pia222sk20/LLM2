@@ -131,5 +131,20 @@ korean_documents = [
     )
 ]
 
+test_texts = [
+    '한국어 자연어 처리란 무엇인가요',
+    'RAG 시스템의 장점을 설명해 주세요',
+    '벡터 데이터베이스의 종류'
+]
+from time import time
 # 임베딩 모델 테스트
 # openai 임베딩(base)
+openai_embeddings = KoreanEmbeddingModels.get_openai()
+start_time = time()
+openai_vectors = openai_embeddings.embed_documents(test_texts)
+elapsed = time() - start_time
+print('openai 임베딩')
+print(f'벡터차원 : {len(openai_vectors)}')
+print(f'처리시간 : {elapsed:.2f}')
+
+# BGE-M3 모델 테스트
