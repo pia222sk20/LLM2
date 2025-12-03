@@ -139,30 +139,22 @@ test_texts = [
 from time import time
 # 임베딩 모델 테스트
 # openai 임베딩(base)
-openai_embeddings = KoreanEmbeddingModels.get_openai()
-start_time = time()
-openai_vectors = openai_embeddings.embed_documents(test_texts)
-elapsed = time() - start_time
-print('openai 임베딩')
-print(f'벡터차원 : {len(openai_vectors)}')
-print(f'처리시간 : {elapsed:.2f}')
+embeding_models = (
+    KoreanEmbeddingModels.get_openai(), KoreanEmbeddingModels.get_bge_m3(), 
+    KoreanEmbeddingModels.get_korean_roberta(),KoreanEmbeddingModels.get_multilingual_e5()
+)
 
-# BGE-M3 모델 테스트
-hf_embeddings = KoreanEmbeddingModels.get_bge_m3()
-start_time = time()
-bgem3_vectors = openai_embeddings.embed_documents(test_texts)
-elapsed = time() - start_time
-print('hf_embeddings 임베딩')
-print(f'벡터차원 : {len(bgem3_vectors)}')
-print(f'처리시간 : {elapsed:.2f}')
+def evaluate_embeding_models(embeingmodel:KoreanEmbeddingModels, test_texts:List[str]):
+    start_time = time()
+    vectors = embeingmodel.embed_documents(test_texts)
+    elapsed = time() - start_time
+    print('openai 임베딩')
+    print(f'벡터차원 : {len(vectors)}')
+    print(f'처리시간 : {elapsed:.2f}')
 
-ko_orberta = KoreanEmbeddingModels.get_korean_roberta()
-start_time = time()
-ko_orberta_vectors = ko_orberta.embed_documents(test_texts)
-elapsed = time() - start_time
-print('ko_orberta_vectors 임베딩')
-print(f'벡터차원 : {len(ko_orberta_vectors)}')
-print(f'처리시간 : {elapsed:.2f}')
+# 각 임베딩 모델 평가
+for model in embeding_models:
+    evaluate_embeding_models(model, test_texts)
 
 # VectorDB 구축 , 검색 테스트
 # 청킹(텍스트 분할)
@@ -173,15 +165,18 @@ text_spliter =  RecursiveCharacterTextSplitter(
 doc_chunks = text_spliter.split_documents(korean_documents)
 print(f'문서분할 완료 : {len(doc_chunks)}개 청크')
 
-# VectorDB 구축
-vectorStore =  Chroma.from_documents(
-    documents=doc_chunks,
-    collection_name='korean_docs',
-    embedding=hf_embeddings  # BGM-M3 모델
-)
-print('검색 테스트 결과')
-for query in test_texts:
-    results = vectorStore.similarity_search(query)
-    print(f'\n\n질문 : {query}')
-    print(f'검색결과 : {results[0].metadata.get('topic', 'N/A')}')
-    print(f'찾은 문장 : {results[0].page_content}')
+
+# 각 모델별 VectorDB구축 및 테스트
+for model in embeding_models:
+    # VectorDB 구축
+    vectorStore =  Chroma.from_documents(
+        documents=doc_chunks,
+        collection_name='korean_docs',
+        embedding=model
+    )
+    print('검색 테스트 결과')
+    for query in test_texts:
+        results = vectorStore.similarity_search(query)
+        print(f'\n\n질문 : {query}')
+        print(f'검색결과 : {results[0].metadata.get('topic', 'N/A')}')
+        print(f'찾은 문장 : {results[0].page_content}')
