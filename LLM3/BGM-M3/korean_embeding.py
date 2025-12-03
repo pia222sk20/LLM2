@@ -149,8 +149,8 @@ def evaluate_embeding_models(embeingmodel:KoreanEmbeddingModels, test_texts:List
     start_time = time()
     vectors = embeingmodel.embed_documents(test_texts)
     elapsed = time() - start_time
-    print(f'{model_name} 임베딩')
-    print(f'벡터차원 : {len(vectors)}')
+    print(f'\n{model_name} 임베딩')
+    print(f'벡터차원 : {len(vectors[0])}')
     print(f'처리시간 : {elapsed:.2f}')
 
 # 각 임베딩 모델 평가
@@ -181,3 +181,10 @@ for idx, model in enumerate(embeding_models):
         print(f'\n질문 : {query}')
         print(f'검색결과 : {results[0].metadata.get('topic', 'N/A')}')
         print(f'찾은 문장 : {results[0].page_content}')
+
+# 하이브리드 검색  - 위에서 한국어 임베딩중에 성능이 가장 좋은 모델을 선택해서 sparse vector 방식과 하이브리드로 연결 즉 BM25
+# RRF로 rank 형태로 최종 결과를 도출하던지.. 또는 bm25 리트리버와  앙상블리트리버로 최종 구현(두방식에 대한 가중치를 조정)
+
+# 적절한 프롬프트와 llm을 체인방식으로 결합해서 결과를 도출
+# 또는 랭 그래프형태로 구현해도 됨
+
