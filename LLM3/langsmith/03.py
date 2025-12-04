@@ -57,8 +57,9 @@ for project in project_lists:
 
 
 # 데이터 셋 생성
+dataset_name=f"{os.getenv('LANGCHAIN_PROJECT')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 dataset = client.create_dataset(
-    dataset_name=os.getenv('LANGCHAIN_PROJECT') + '_001',
+    dataset_name=dataset_name,
     description=os.getenv('LANGCHAIN_PROJECT') + '_QA 평가용 데이터셋'
 )
 # 평가용 예제
@@ -84,8 +85,8 @@ for ex in examples:
     )
 print(f'    {len(examples)}개 예제 추가 완료')
 
-# 테스트 로직
 from langsmith.evaluation import evaluate
+client = Client()
 # 평가모델 정의
 llm = ChatOpenAI(model='gpt-4o-mini',temperature=0)
 #평가 함수 실행
@@ -107,11 +108,9 @@ def simple_correctness(run, example):
         "comment": f"gold={gold} | pred={pred}"
     }
 # 평가실행
-# 데이터셋 이름은 최신상태로
-# datasets = client.list_datasets(order='desc',limit=1)
 results = evaluate(
     predict,
-    data=dataset.name,            
+    data=dataset_name,            
     evaluators=[simple_correctness]
 )
 
