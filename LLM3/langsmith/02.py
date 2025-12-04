@@ -189,7 +189,7 @@ def dataset_evaluation():
         # 평가실행
         results = evaluate(
             dataset_name=dataset_name,
-            model=predict,
+            target=predict,
             evaluators=['qa']  # langSmith 내장 평가기
         )
 
