@@ -34,7 +34,7 @@ test_questions = [
 ]
 for q in test_questions:
     response = chain.invoke({'question':q})
-    print('질문 : {q}  답변 : {response}')
+    print(f'질문 : {q}  답변 : {response}')
 
 
 # @traceable 로 설정된 함수는 자동으로 추적
