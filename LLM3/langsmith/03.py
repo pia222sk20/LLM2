@@ -120,5 +120,5 @@ print(results)
 
 
 # 정리 (테스트 후 삭제)
-client.delete_dataset(dataset_id=dataset.id)
-print(' 데이터셋 삭제완료')
+# client.delete_dataset(dataset_id=dataset.id)
+# print(' 데이터셋 삭제완료')
