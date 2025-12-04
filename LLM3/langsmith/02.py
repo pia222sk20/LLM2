@@ -139,6 +139,8 @@ def dataset_evaluation():
     client = Client()
     # 데이터셋이름 생성(고유하게)
     dataset_name = f"qa_eval_dataset_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    import unicodedata
+    dataset_name = unicodedata.normalize('NFKD', dataset_name).encode('ascii','ignore').decode()
     print(f'\n데이터셋 생성: {dataset_name}')
 
     try:
@@ -191,7 +193,7 @@ if __name__ =='__main__':
     # traceable_decorator() # 커스텀 함수 추적
     # metadata_tag() # 메타데이터 와 태그 추가
     # langsmith_client()  # 데이터조회  client 사용
-
+    dataset_evaluation()  # 평가용 데이터셋 생성 및 확인 그리고 삭제
     
     
     # @traceable(name="create_traking")
