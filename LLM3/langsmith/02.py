@@ -138,14 +138,13 @@ def dataset_evaluation():
     '''langSmith에서 평가용 데이터셋을 생성하고 모델을 평가'''
     client = Client()
     # 데이터셋이름 생성(고유하게)
-    dataset_name = f"qa_eval_dataset_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    import unicodedata
-    dataset_name = unicodedata.normalize('NFKD', dataset_name).encode('ascii','ignore').decode()
+    dataset_name = f"qa_eval_dataset_{datetime.now().strftime('%Y%m%d_%H%M%S')}"    
+    
     print(f'\n데이터셋 생성: {dataset_name}')
 
     try:
         dataset = client.create_dataset(
-            dataset_name==dataset_name,
+            dataset_name=dataset_name,
             description='QA 시스템 평가용 데이터셋'
         )
         # 평가용 예제
