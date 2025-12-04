@@ -177,6 +177,26 @@ def dataset_evaluation():
             print(f'  {i}  {question}')
         
         # 테스트 로직
+        from langsmith.evaluation import evaluate
+        client = Client()
+        # 평가모델 정의
+        llm = ChatOpenAI(model='gpt-4o-mini',temperature=0)
+        #평가 함수 실행
+        def predict(inputs:str)->Dict[str,str]:
+            q = inputs['question']
+            result = llm.invoke(f'{q} 간단히 답해줘')
+            return {'answer':result.content}
+        # 평가실행
+        results = evaluate(
+            dataset_name=dataset_name,
+            model=predict,
+            evaluators=['qa']  # langSmith 내장 평가기
+        )
+
+        print('\n평가 결과 요약')
+        print(results['summary'])
+
+
 
         # 정리 (테스트 후 삭제)
         client.delete_dataset(dataset_id=dataset.id)
