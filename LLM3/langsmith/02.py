@@ -134,6 +134,55 @@ def langsmith_client():
         print(f'최근 실행기록 조회중 오류 발생 : {e}')
     print('\n langSmith Client 사용 완료')
 
+def dataset_evaluation():
+    '''langSmith에서 평가용 데이터셋을 생성하고 모델을 평가'''
+    client = Client()
+    # 데이터셋이름 생성(고유하게)
+    dataset_name = f"qa_eval_dataset_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    print(f'\n데이터셋 생성: {dataset_name}')
+
+    try:
+        dataset = client.create_dataset(
+            dataset_name==dataset_name,
+            description='QA 시스템 평가용 데이터셋'
+        )
+        # 평가용 예제
+        examples = [
+            {
+                "inputs": {"question": "Python이란 무엇인가요?"},
+                "outputs": {"answer": "Python은 프로그래밍 언어입니다."}
+            },
+            {
+                "inputs": {"question": "1+1은?"},
+                "outputs": {"answer": "2입니다."}
+            },
+            {
+                "inputs": {"question": "AI란?"},
+                "outputs": {"answer": "인공지능입니다."}
+            }
+        ]
+        for ex in examples:
+            client.create_example(
+                inputs=ex['inputs'],
+                outputs=ex['outputs'],
+                dataset_id=dataset.id
+            )
+        print(f'    {len(examples)}개 예제 추가 완료')
+        # 데이터셋 생성 내용 확인
+        print('데이터셋 생성 내용 확인')
+        saved_examples = client.list_examples(dataset_id=dataset.id)
+        for i, ex in enumerate(saved_examples,1):
+            question = ex.inputs.get('question', 'N/A')
+            print(f'  {i}  {question}')
+        
+        # 테스트 로직
+
+        # 정리 (테스트 후 삭제)
+        client.delete_dataset(dataset_id=dataset.id)
+        print(' 데이터셋 삭제완료')
+    except Exception as e:
+        print(f' 평가용 데이터셋 오류발생 : {e}')
+
 
 
 if __name__ =='__main__':
@@ -142,10 +191,11 @@ if __name__ =='__main__':
     # traceable_decorator() # 커스텀 함수 추적
     # metadata_tag() # 메타데이터 와 태그 추가
     # langsmith_client()  # 데이터조회  client 사용
-    
-    
-    @traceable(name="create_traking")
-    def add(a, b):
-        return a + b
 
-    add(1, 2)
+    
+    
+    # @traceable(name="create_traking")
+    # def add(a, b):
+    #     return a + b
+
+    # add(1, 2)
