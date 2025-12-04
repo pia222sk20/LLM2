@@ -106,6 +106,36 @@ def metadata_tag():
     print('\n메타데이터와 태그 추가 완료')
 
 
+# langSmith Client 직접 사용
+def langsmith_client():
+    '''LangSmith client를 직접사용해서 데이터를 조회'''
+    client = Client()
+    print('\n프로젝트 목록 조회')
+    try:
+        projects = client.list_projects(limit=5)
+        if projects:
+            for project in projects:
+                print(f'    - {project.name}')
+    except Exception as e:
+        print(f'프로젝트 조회중 오류 발생 : {e}')
+    print('\n최근 실행기록')
+    try:
+        project_name = os.getenv('LANGCHAIN_PROJECT','default')
+        runs = list(client.list_runs(
+            project_name=project_name,
+            limit=5
+        ))
+        if runs:
+            for run in runs:
+                status = 'success' if run.status == 'success' else 'faile'
+                duration = f'{run.total_time:.2f}' if run.total_time else 'N/A'
+                print(f'    {status} {run.name}  |  {duration}')
+    except Exception as e:
+        print(f'최근 실행기록 조회중 오류 발생 : {e}')
+    print('\n langSmith Client 사용 완료')
+
+
+
 if __name__ =='__main__':
     check_environment()  #  환경체크
     auto_tracing() # 자동 추적
