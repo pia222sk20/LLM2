@@ -104,3 +104,10 @@ def metadata_tag():
         config = config
     )
     print('\n메타데이터와 태그 추가 완료')
+
+
+if __name__ =='__main__':
+    check_environment()  #  환경체크
+    auto_tracing() # 자동 추적
+    traceable_decorator() # 커스텀 함수 추적
+    metadata_tag() # 메타데이터 와 태그 추가
