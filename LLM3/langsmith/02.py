@@ -186,15 +186,28 @@ def dataset_evaluation():
             q = inputs['question']
             result = llm.invoke(f'{q} 간단히 답해줘')
             return {'answer':result.content}
+        def simple_correctness(run, example):
+            """run.outputs 로 모델 답변을 가져오는 방식"""
+
+            gold = example.outputs["answer"]
+            pred = run.outputs["answer"]
+
+            score = 1.0 if gold in pred else 0.0
+
+            return {
+                "key": "correctness",
+                "score": score,
+                "comment": f"gold={gold} | pred={pred}"
+            }
         # 평가실행
         results = evaluate(
-            dataset_name=dataset_name,
-            target=predict,
-            evaluators=['qa']  # langSmith 내장 평가기
+            predict,
+            data=dataset_name,            
+            evaluators=[simple_correctness]
         )
 
         print('\n평가 결과 요약')
-        print(results['summary'])
+        print(results)
 
 
 
