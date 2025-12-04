@@ -82,5 +82,25 @@ def traceable_decorator():
     print('\n @traceable 데코레이터 완료!')
 
 # 메탇이터 와 태그 추가    
-
-
+def metadata_tag():
+    '''추적에 메타데이터와 태그를 추가해서 필터링/분석에 활용'''
+    from langchain_core.runnables import RunnableConfig
+    llm = ChatOpenAI(model='gpt-4o-mini',temperature=0)
+    prompt = ChatPromptTemplate.from_template('{question}')
+    chain = prompt | llm | StrOutputParser()
+    # 메타데이터와 태그 설정
+    config = RunnableConfig(
+        metadata = {
+            'user_id' : 'user_123',
+            'session_id' : 'sees_456',
+            'environment' : 'development',
+            'version':"1.0.0"
+        },
+        tags = ['example','qa','test']
+    )
+    print('\n메타데이터 / 태그  테스트')
+    response = chain.invoke(
+        {'question':'RAG란 무엇인가요?'},
+        config = config
+    )
+    print('\n메타데이터와 태그 추가 완료')
