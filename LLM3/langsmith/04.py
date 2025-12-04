@@ -609,7 +609,7 @@ def main():
     """메인 실행 함수"""
     
     # LangSmith 추적 활성화
-    enable_langsmith_tracing("RAG-Summary-Evaluation-2024")
+    enable_langsmith_tracing("RAG-Summary-Evaluation-2025")
     
     # 샘플 데이터 생성 (PDF 대신 사용)
     sample_texts = create_sample_ai_documents()
