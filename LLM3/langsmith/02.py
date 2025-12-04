@@ -137,8 +137,15 @@ def langsmith_client():
 
 
 if __name__ =='__main__':
-    # check_environment()  #  환경체크
-    # auto_tracing() # 자동 추적
-    # traceable_decorator() # 커스텀 함수 추적
-    # metadata_tag() # 메타데이터 와 태그 추가
+    check_environment()  #  환경체크
+    auto_tracing() # 자동 추적
+    traceable_decorator() # 커스텀 함수 추적
+    metadata_tag() # 메타데이터 와 태그 추가
     langsmith_client()  # 데이터조회  client 사용
+    
+    
+    # @traceable(name="multi_step_analysis")
+    # def add(a, b):
+    #     return a + b
+
+    # add(1, 2)
