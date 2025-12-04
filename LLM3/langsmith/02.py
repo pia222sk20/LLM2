@@ -42,7 +42,7 @@ def auto_tracing():
     llm = ChatOpenAI(model='gpt-4o-mini',temperature=0)
     prompt = ChatPromptTemplate.from_messages([
         ('system','당신은 친절한 ai 에이전트입니다. 사용자의 요구사항에 맞게 한글로 설명해주세요'),
-        ('human', f'간단히 설명해주세요: {topic}')
+        ('human', '간단히 설명해주세요: {topic}')
     ])
     chain = prompt | llm | StrOutputParser()
     topics = ['Python','AI']
