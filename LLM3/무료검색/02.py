@@ -276,5 +276,5 @@ question = '우리회사가 수익성 극대화를 위한 마케팅 전략에 �
 result = app.invoke({'question' : question})
 
 all_docs = result.get('all_docs')
-if all_docs:
-    print(all_docs.get('metadata'))
+for doc in  all_docs:
+    print(doc.get('metadata'))
