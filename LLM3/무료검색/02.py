@@ -72,6 +72,7 @@ class DuckDuckGoWebSearch():
 # 웹 검색 인스턴스 생성  - 외부문서
 web_search = DuckDuckGoWebSearch()
 
+
 # 내부문서 VectorDB구축
 # 내부문서 셈플(회사의 데이터베이스 또는 각종 문서)
 internal_documents = [
@@ -129,8 +130,10 @@ class HybridRAGState(TypedDict):
     question : str
     internal_docs : List[Document]
     web_docs : List[Document]
+    all_docs : List[Document]
     need_web_search : str
-    answer : str
+    ref_doc = List[dict]
+    answer : str    
 
 class RelevanceGrade(BaseModel):
     '''문서 관련성 평가 결과'''
@@ -184,7 +187,7 @@ def web_search_node(state:HybridRAGState) -> dict:
     all_docs = state.get('all_docs',[])
     web_docs =  web_search.search(question)
     # 기존 문서에 웹 검색 결과 추가
-    all_docs.extend(web_search)
+    all_docs.extend(web_docs)
     return {
         'web_docs' : web_docs,
         'all_docs' : all_docs
@@ -199,12 +202,17 @@ def generate_answer_node(state: HybridRAGState) -> dict:
     
     # 컨텍스트 구성
     context_parts = []
+    ref_docs = []
     for doc in all_docs:
         source = doc.metadata.get("source", "unknown")
         if source == "internal":
             source_label = "내부문서"
         elif source in ["duckduckgo_web_search", "duckduckgo_news"]:
             source_label = "웹검색(DuckDuckGo)"
+            ref_docs.append({
+                'title' :  doc.metadata.get('title','NA'),
+                'url' :  doc.metadata.get('url','NA')
+            })            
         else:
             source_label = "기타"
         context_parts.append(f"[{source_label}]\n{doc.page_content}")
@@ -233,7 +241,7 @@ def generate_answer_node(state: HybridRAGState) -> dict:
     
     print("   답변 생성 완료")
     
-    return {"answer": answer}
+    return {"answer": answer ,'ref_docs':ref_docs }
 
 def decide_web_search(state:HybridRAGState) -> Literal['web_search', 'generate']:
     '''웹 검색 필요 여부 결정'''
@@ -271,6 +279,8 @@ workflow.add_edge('generate', END)
 # 컴파일
 app = workflow.compile()
 
-question = '우리 회사의 RAG 시스템에 대해서 알려줘'
+question = '우리회사가 수익성 극대화를 위한 마케팅 전략에 대해 알려줘'
 result = app.invoke({'question' : question})
 print(result)
+# print(f"웹검색의 경우 참고한 외부 url 과 제목 : {result['url'] } / {result['title'] }")
+# print(f"외부검색 : {result['need_web_search']}  결과 : {result['answer']}")
