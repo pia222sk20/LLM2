@@ -132,7 +132,7 @@ class HybridRAGState(TypedDict):
     web_docs : List[Document]
     all_docs : List[Document]
     need_web_search : str
-    ref_doc : List[dict]
+    ref_docs : List[dict]
     answer : str    
 
 class RelevanceGrade(BaseModel):
@@ -239,8 +239,7 @@ def generate_answer_node(state: HybridRAGState) -> dict:
     chain = prompt | llm | StrOutputParser()
     answer = chain.invoke({"context": context, "question": question})
     
-    print("   답변 생성 완료")
-    print(f'디버깅... ref_docs : {ref_docs}')
+    print("   답변 생성 완료")    
     return {"answer": answer ,'ref_docs':ref_docs }
 
 def decide_web_search(state:HybridRAGState) -> Literal['web_search', 'generate']:
@@ -281,6 +280,5 @@ app = workflow.compile()
 
 question = '우리회사가 수익성 극대화를 위한 마케팅 전략에 대해 알려줘'
 result = app.invoke({'question' : question})
-print(result)
-# print(f"웹검색의 경우 참고한 외부 url 과 제목 : {result['url'] } / {result['title'] }")
-# print(f"외부검색 : {result['need_web_search']}  결과 : {result['answer']}")
+print(f"웹검색의 경우 참고한 외부 url 과 제목 : {result['ref_docs'] }")
+print(f"답변 : {result['answer']}")
