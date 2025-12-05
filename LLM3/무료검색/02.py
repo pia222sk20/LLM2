@@ -136,3 +136,108 @@ class RelevanceGrade(BaseModel):
     '''문서 관련성 평가 결과'''
     binary_score:str = Field(default='no', description='yes or no')
 
+# LLM 선정
+llm = ChatOpenAI(model = 'gpt-4o-mini')
+# 문서평가용 구조화된 LLM
+grader_llm = llm.with_structured_output(RelevanceGrade)
+grade_prompt = ChatPromptTemplate.from_template('''
+당신은 문서 관련성을 평가하는 전문가입니다.
+문서가 질문에 답하는데 도움이 되는지를 평가하세요.
+관련이 있으면 'yes' 없으면 'no'를 반환하세요
+
+문서 : {document}
+
+질문 : {question}                                                                                                   
+''')
+
+# 노드생성
+def search_internal_node(state:HybridRAGState) -> dict:
+    '''내부문서 검색 노드'''
+    question = state['question']
+    internal_docs =  internal_retriever.invoke(question)
+    return {'internal_docs' : internal_docs}
+
+def grade_internal_docs_node(state : HybridRAGState) -> dict:
+    '''내부문서 관련성 평가 노드'''
+    question = state['question']
+    internal_docs = state['internal_docs']
+    # 관련 문서가 있는지 평가
+    relevant_docs = []    
+    for doc in internal_docs:
+        result = grader_llm.invoke(
+            grade_prompt.format(question=question, document=doc.page_content)
+        )
+        if result.binary_score.lower() == 'yes':
+            relevant_docs.append(doc)
+    if len(relevant_docs) < 1:
+        need_web ='yes'
+    else:
+        need_web ='no'
+    return {
+        'all_docs' : relevant_docs,
+        'need_web_search' : need_web
+    }
+
+def web_search_node(state:HybridRAGState) -> dict:
+    '''웹 검색노드 DuckDuckGo'''
+    question = state['question']
+    all_docs = state.get('all_docs',[])
+    web_docs =  web_search.search(question)
+    # 기존 문서에 웹 검색 결과 추가
+    all_docs.extend(web_search)
+    return {
+        'web_docs' : web_docs,
+        'all_docs' : all_docs
+    }
+
+def generate_answer_node(state: HybridRAGState) -> dict:
+    """답변 생성 노드"""
+    print("\n   [생성] 답변 생성 중...")
+    
+    question = state["question"]
+    all_docs = state["all_docs"]
+    
+    # 컨텍스트 구성
+    context_parts = []
+    for doc in all_docs:
+        source = doc.metadata.get("source", "unknown")
+        if source == "internal":
+            source_label = "내부문서"
+        elif source in ["duckduckgo_web_search", "duckduckgo_news"]:
+            source_label = "웹검색(DuckDuckGo)"
+        else:
+            source_label = "기타"
+        context_parts.append(f"[{source_label}]\n{doc.page_content}")
+    
+    context = "\n\n---\n\n".join(context_parts)
+    
+    # 답변 생성 프롬프트
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """당신은 내부 문서와 웹 검색 결과를 활용하는 AI 어시스턴트입니다.
+
+규칙:
+1. 내부 문서 정보를 우선적으로 사용하세요.
+2. 웹 검색 결과는 보충 정보로 활용하세요.
+3. 정보 출처를 명시하세요 (내부문서 / 웹검색).
+4. 한국어로 명확하게 답변하세요."""),
+        ("human", """문맥:
+{context}
+
+질문: {question}
+
+답변:""")
+    ])
+    
+    chain = prompt | llm | StrOutputParser()
+    answer = chain.invoke({"context": context, "question": question})
+    
+    print("   답변 생성 완료")
+    
+    return {"answer": answer}
+
+def decide_web_search(state:HybridRAGState) -> Literal['web_search', 'generate']:
+    '''웹 검색 필요 여부 결정'''
+    if state['need_web_search'] == 'yes':
+        return 'web_search'
+    else:
+        return 'generate'
