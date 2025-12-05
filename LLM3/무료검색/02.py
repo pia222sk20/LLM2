@@ -277,4 +277,10 @@ result = app.invoke({'question' : question})
 
 all_docs = result.get('all_docs')
 for doc in  all_docs:
-    print(doc.get('metadata'))
+    if doc.metadata.get('source') == 'duckduckgo_web_search':
+        print(doc.metadata.get('url'))
+        print(doc.metadata.get('title'))    
+
+print('\n\n최종답변\n\n')        
+print(result['answer'])
+
