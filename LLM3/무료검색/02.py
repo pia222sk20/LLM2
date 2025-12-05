@@ -270,3 +270,7 @@ workflow.add_edge('generate', END)
 
 # 컴파일
 app = workflow.compile()
+
+question = '우리 회사의 RAG 시스템에 대해서 알려줘'
+result = app.invoke({'question' : question})
+print(result)
