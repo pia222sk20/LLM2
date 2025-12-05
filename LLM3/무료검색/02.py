@@ -131,8 +131,7 @@ class HybridRAGState(TypedDict):
     internal_docs : List[Document]
     web_docs : List[Document]
     all_docs : List[Document]
-    need_web_search : str
-    ref_docs : List[dict]
+    need_web_search : str    
     answer : str    
 
 class RelevanceGrade(BaseModel):
@@ -201,18 +200,13 @@ def generate_answer_node(state: HybridRAGState) -> dict:
     all_docs = state["all_docs"]
     
     # 컨텍스트 구성
-    context_parts = []
-    ref_docs = []
+    context_parts = []    
     for doc in all_docs:
         source = doc.metadata.get("source", "unknown")
         if source == "internal":
             source_label = "내부문서"
         elif source in ["duckduckgo_web_search", "duckduckgo_news"]:
-            source_label = "웹검색(DuckDuckGo)"
-            ref_docs.append({
-                'title' :  doc.metadata.get('title','NA'),
-                'url' :  doc.metadata.get('url','NA')
-            })            
+            source_label = "웹검색(DuckDuckGo)"                       
         else:
             source_label = "기타"
         context_parts.append(f"[{source_label}]\n{doc.page_content}")
@@ -240,7 +234,7 @@ def generate_answer_node(state: HybridRAGState) -> dict:
     answer = chain.invoke({"context": context, "question": question})
     
     print("   답변 생성 완료")    
-    return {"answer": answer ,'ref_docs':ref_docs }
+    return {"answer": answer }
 
 def decide_web_search(state:HybridRAGState) -> Literal['web_search', 'generate']:
     '''웹 검색 필요 여부 결정'''
@@ -280,5 +274,7 @@ app = workflow.compile()
 
 question = '우리회사가 수익성 극대화를 위한 마케팅 전략에 대해 알려줘'
 result = app.invoke({'question' : question})
-print(f"웹검색의 경우 참고한 외부 url 과 제목 : {result['ref_docs'] }")
-print(f"답변 : {result['answer']}")
+
+all_docs = result.get('all_docs')
+if all_docs:
+    print(all_docs.get('metadata'))
