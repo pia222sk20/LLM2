@@ -109,3 +109,30 @@ internal_documents = [
     ),
 ]
 
+# 텍스트 분할(청킹)
+text_splitter = RecursiveCharacterTextSplitter(chunk_size= 300, chunk_overlap = 50)
+doc_chunks = text_splitter.split_documents(internal_documents)
+
+# VectorDB 구축
+vectorStore = Chroma.from_documents(
+    documents=doc_chunks,
+    embedding=OpenAIEmbeddings(model='text-embedding-3-small'),
+    collection_name= 'duckduckgo_rag' 
+)
+
+# 내부 문서 리트리버
+internal_retriever = vectorStore.as_retriever(search_kwargs={'k':2})
+
+# 하이브리드 RAG 상태 및 노드 정의
+class HybridRAGState(TypedDict):
+    '''하이브리드 RAG 에이전트 상태'''
+    question : str
+    internal_docs : List[Document]
+    web_docs : List[Document]
+    need_web_search : str
+    answer : str
+
+class RelevanceGrade(BaseModel):
+    '''문서 관련성 평가 결과'''
+    binary_score:str = Field(default='no', description='yes or no')
+
