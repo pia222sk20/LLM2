@@ -241,3 +241,5 @@ def decide_web_search(state:HybridRAGState) -> Literal['web_search', 'generate']
         return 'web_search'
     else:
         return 'generate'
+
+# LangGraph 워크플로우 구성    
