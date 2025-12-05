@@ -243,3 +243,30 @@ def decide_web_search(state:HybridRAGState) -> Literal['web_search', 'generate']
         return 'generate'
 
 # LangGraph 워크플로우 구성    
+# 내부검색 노드 / 외부검색 노드 / 관련성 평가 노드 / 답변생성 노드  /  웹필요여부 결정 함수
+
+workflow = StateGraph(HybridRAGState)
+
+# 노드 추가
+workflow.add_node('search_internal', search_internal_node)
+workflow.add_node('web_search', web_search_node)
+workflow.add_node('grade_docs', grade_internal_docs_node)
+workflow.add_node('generate', generate_answer_node)
+
+# 엣지추가
+workflow.add_edge(START, "search_internal")
+workflow.add_edge('search_internal', "grade_docs")
+# 분기
+workflow.add_conditional_edges(
+    'grade_docs',
+    decide_web_search,
+    {
+        'web_search' : 'web_search',
+        'generate' : 'generate'
+    }
+)
+workflow.add_edge('web_search', "generate")
+workflow.add_edge('generate', END)
+
+# 컴파일
+app = workflow.compile()
