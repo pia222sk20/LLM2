@@ -132,7 +132,7 @@ class HybridRAGState(TypedDict):
     web_docs : List[Document]
     all_docs : List[Document]
     need_web_search : str
-    ref_doc = List[dict]
+    ref_doc : List[dict]
     answer : str    
 
 class RelevanceGrade(BaseModel):
@@ -240,7 +240,7 @@ def generate_answer_node(state: HybridRAGState) -> dict:
     answer = chain.invoke({"context": context, "question": question})
     
     print("   답변 생성 완료")
-    
+    print(f'디버깅... ref_docs : {ref_docs}')
     return {"answer": answer ,'ref_docs':ref_docs }
 
 def decide_web_search(state:HybridRAGState) -> Literal['web_search', 'generate']:
