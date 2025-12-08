@@ -411,5 +411,10 @@ class LocalMonitoringHandler(BaseCallbackHandler):
 
 
 if __name__ == '__main__':
-    LocalTraceDB()
+    # 로컬 모니터링 적용 RAG 체인
+    trace_db = LocalTraceDB()
     print('sqllite 데이터베이스 초기화 완료')
+
+    # 콜백핸들러 인스턴스(객체) 생성
+    monitoring_handler = LocalMonitoringHandler(trace_db=trace_db)
+
