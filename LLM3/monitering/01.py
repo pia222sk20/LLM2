@@ -119,6 +119,85 @@ class LocalTraceDB:
             conn.commit()
             conn.close()
 
+    def record_token_usage(self, run_id:str, prompt_tokens:int ,completion_tokens:int, model:str='gpt-4o-mini'):
+        '''토큰사용량'''
+        total_tokens = prompt_tokens + completion_tokens
+        # 비용추정( gpt-4o-mini 기준)
+        cost_per_1k_input = 0.00015
+        cost_per_1k_output = 0.0006
+        estimated_cost = (prompt_tokens / 1000*cost_per_1k_input + 
+                          completion_tokens / 1000 * cost_per_1k_output)
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
 
+        cursor.execute('''
+            INSERT INTO token_usage(run_id, prompt_tokens, completion_tokens, total_tokens, estimated_cost, model, recorded_at)
+                       values(?,?,?,?,?,?,?)'''
+                       ,(
+                           run_id,prompt_tokens,completion_tokens,total_tokens,estimated_cost,model,datetime.now().isoformat()
+                       ))
+        conn.commit()
+        conn.close()
+
+    def get_summary(self) -> Dict:
+        """전체 요약 통계"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # 총 실행 수
+        cursor.execute("SELECT COUNT(*) FROM runs")
+        total_runs = cursor.fetchone()[0]
+        
+        # 평균 응답 시간
+        cursor.execute("SELECT AVG(duration_seconds) FROM runs WHERE status = 'success'")
+        avg_duration = cursor.fetchone()[0] or 0
+        
+        # 성공률
+        cursor.execute("SELECT COUNT(*) FROM runs WHERE status = 'success'")
+        success_count = cursor.fetchone()[0]
+        success_rate = (success_count / total_runs * 100) if total_runs > 0 else 0
+        
+        # 총 토큰 사용량
+        cursor.execute("SELECT SUM(total_tokens), SUM(estimated_cost) FROM token_usage")
+        token_result = cursor.fetchone()
+        total_tokens = token_result[0] or 0
+        total_cost = token_result[1] or 0
+        
+        conn.close()
+        
+        return {
+            "total_runs": total_runs,
+            "avg_duration_seconds": round(avg_duration, 2),
+            "success_rate": round(success_rate, 1),
+            "total_tokens": total_tokens,
+            "total_estimated_cost": round(total_cost, 4)
+        }
+    
+    def get_recent_runs(self, limit: int = 10) -> List[Dict]:
+        """최근 실행 기록"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT id, name, run_type, start_time, duration_seconds, status
+            FROM runs
+            ORDER BY start_time DESC
+            LIMIT ?
+        """, (limit,))
+        
+        runs = []
+        for row in cursor.fetchall():
+            runs.append({
+                "id": row[0][:8] + "...",  # 짧게 표시
+                "name": row[1],
+                "type": row[2],
+                "time": row[3][:19] if row[3] else None,
+                "duration": f"{row[4]:.2f}s" if row[4] else None,
+                "status": row[5]
+            })
+        
+        conn.close()
+        return runs
+    
 if __name__ == '__main__':
     LocalTraceDB()
