@@ -33,7 +33,7 @@ class LocalTraceDB:
         cursor = conn.cursor()
         # 실행 추적 테이블
         cursor.execute('''
-            CREATE TABLE IF NOT EXITST runs(
+            CREATE TABLE IF NOT EXISTS runs(
                        id TEXT PRIMARY KEY,
                        name TEXT,
                        run_type TEXT,
@@ -49,18 +49,18 @@ class LocalTraceDB:
         ''')
         # 메트릭 테이블
         cursor.execute('''
-            CREATE TABLE IT NOT EXISTS metircs(
+            CREATE TABLE IF NOT EXISTS metircs(
                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                        run_id TEXT,
                        metric_name TEXT,
                        metirc_value REAL,
-                       recorded_at TEXT
+                       recorded_at TEXT,
                        FOREIGN KEY(run_id) REFERENCES runs(id)
                        )
         ''')
         # 토큰사용량 테이블
         cursor.execute('''
-            CREATE TABLE IT NOT EXISTS token_usage(
+            CREATE TABLE IF NOT EXISTS token_usage(
                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                        run_id TEXT,
                        prompt_tokens INTEGER,
@@ -68,7 +68,7 @@ class LocalTraceDB:
                        total_tokens INTEGER,
                        estimated_cost REAL,
                        model TEXT,
-                       recorded_at TEXT
+                       recorded_at TEXT,
                        FOREIGN KEY(run_id) REFERENCES runs(id)
                        )
         ''')     
