@@ -77,7 +77,7 @@ class LocalTraceDB:
 
     def start_run(self, name:str, run_type:str, input_data:Any, metadata:Dict=None) -> str:
         '''새 실행 시작'''
-        run_id = str(uuid.uuid4)
+        run_id = str(uuid.uuid4())
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
@@ -411,11 +411,13 @@ class LocalMonitoringHandler(BaseCallbackHandler):
 
 
 if __name__ == '__main__':
+    load_dotenv()
     # 로컬 모니터링 적용 RAG 체인
+    print('sqllite 데이터베이스 초기중.......')
     trace_db = LocalTraceDB()
     print('sqllite 데이터베이스 초기화 완료')
 
-    # 콜백핸들러 인스턴스(객체) 생성
+    # 콜백핸들러 인스턴스(객체) 생성    
     monitoring_handler = LocalMonitoringHandler(trace_db=trace_db)
     # llm 설정(콜백포함)
     llm = ChatOpenAI(model = 'gpt-4o-mini',callbacks=[monitoring_handler])
@@ -499,6 +501,8 @@ if __name__ == '__main__':
 
     # 모니터링 - 요약통계
     summary = trace_db.get_summary()
+    print(f' 요약통계 : \n{summary}\n\n')
+
     # 최근실행 기록
     recuent_runs = trace_db.get_recent_runs(5)    
     for id, run in enumerate(recuent_runs,1):
