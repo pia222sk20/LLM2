@@ -272,7 +272,7 @@ workflow.add_edge('generate', END)
 # 컴파일
 app = workflow.compile()
 
-question = '우리회사가 수익성 극대화를 위한 마케팅 전략에 대해 알려줘'
+question = '회사의 가이드라인 알려줘'
 result = app.invoke({'question' : question})
 
 all_docs = result.get('all_docs')

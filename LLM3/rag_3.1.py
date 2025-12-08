@@ -28,7 +28,7 @@ prompt = template.invoke({
 from langchain_core.prompts import PromptTemplate
 template = PromptTemplate.from_template('''
 다음질문에 답변하세요
-질문 : {question}                                        
+질문 : {question}
 답변 : ''')
 # 채팅 형식
 from langchain_core.prompts import ChatPromptTemplate
