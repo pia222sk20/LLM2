@@ -74,5 +74,51 @@ class LocalTraceDB:
         ''')     
         conn.commit()
         conn.close()
+
+    def start_run(self, name:str, run_type:str, input_data:Any, metadata:Dict=None) -> str:
+        '''새 실행 시작'''
+        run_id = str(uuid.uuid4)
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO runs(id, name, run_type, start_time, input_data, metadata,status)
+                       values(?,?,?,?,?,?,?)'''
+                       ,(
+                        run_id,name,run_type,datetime.now().isoformat(),
+                        json.dumps(input_data, ensure_ascii=False) if input_data else None,
+                        json.dumps(metadata, ensure_ascii=False) if input_data else None,   
+                        'running'
+                       ))
+        conn.commit()
+        conn.close()
+        return run_id
+    
+    def end_run(self, run_id:str, output_data:Any, status:str='success', error:str=None):
+        '''실행완료'''
+        conn=sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        #시작시간 가져오기
+        cursor.execute('SELECT start_time FROM runs WHERE ID = ?', (run_id))
+        result = cursor.fetchone()
+        if result:
+            start_time = datetime.fromisoformat(result[0])
+            end_time = datetime.now()
+            duration = (end_time - start_time).total_seconds()
+            cursor.execute('''
+                UPDATE runs
+                           SET end_time = ?, duration_seconds=?, output_data=?,status=?,error=?
+                           WHERE id = ?''',
+                           (
+                               end_time.isoformat(),
+                               duration,
+                               json.dumps(output_data,ensure_ascii=False) if output_data else None,
+                               status,
+                               error,
+                               run_id
+                           ))
+            conn.commit()
+            conn.close()
+
+
 if __name__ == '__main__':
     LocalTraceDB()
