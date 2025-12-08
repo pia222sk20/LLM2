@@ -53,7 +53,7 @@ class LocalTraceDB:
                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                        run_id TEXT,
                        metric_name TEXT,
-                       metirc_value REAL,
+                       metric_value REAL,
                        recorded_at TEXT,
                        FOREIGN KEY(run_id) REFERENCES runs(id)
                        )
