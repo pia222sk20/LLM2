@@ -198,6 +198,218 @@ class LocalTraceDB:
         
         conn.close()
         return runs
+
+#콜벡핸들러
+class LocalMonitoringHandler(BaseCallbackHandler):
+    '''로컬모니터링을 위한 콜백 핸들러
+    모든 llm 호출을 로컬 SQLite3 DB에 기록'''
+    def __init__(self,trace_db:LocalTraceDB, log_to_console:bool = True):
+        self.trace_db = trace_db
+        self.log_to_console = log_to_console
+        self.current_run_id = None
+        self.start_time = None
+    def on_llm_start(self, serialized:Dict[str, Any], prompts:List[str], **kwargs):
+        '''LLM 호출 시작'''
+        self.start_time = datetime.now()
+        model_name = serialized.get('name','UnKown')
+        # db에 실행시간 기록
+        self.current_run_id = self.trace_db.start_run(
+            name = f'llm_call_{model_name}',
+            run_type='llm',
+            input_data={'prompts':prompts[:1]},
+            metadata={'model':model_name}
+        )
+        if self.log_to_console:
+            print(f"    llm 호출시작        : {self.start_time.strftime('%H:%M:%S')}")
+            print(f"    모델               : {model_name}")
+            print(f"    프롬프트길이        : {len(prompts[0])}")
+    def on_llm_end(self, response,  **kwargs):
+        '''llm 호출 완료'''
+        end_time = datetime.now()
+        duration = (end_time - self.start_time).total_seconds()
+        
+        # 토큰 사용량 추출
+        token_usage = {}
+        if hasattr(response, 'llm_output') and response.llm_output:
+            token_usage = response.llm_output.get('token_usage', {})
+        
+        # 출력 텍스트 추출
+        output_text = ""
+        if response.generations:
+            output_text = response.generations[0][0].text if response.generations[0] else ""
+        
+        # DB에 기록
+        if self.current_run_id:
+            self.trace_db.end_run(
+                self.current_run_id,
+                output_data={"response": output_text[:500]},  # 처음 500자만
+                status="success"
+            )
+            
+            # 토큰 사용량 기록
+            if token_usage:
+                self.trace_db.record_token_usage(
+                    self.current_run_id,
+                    token_usage.get('prompt_tokens', 0),
+                    token_usage.get('completion_tokens', 0)
+                )
+            
+            # 응답 시간 메트릭
+            self.trace_db.record_metric(
+                self.current_run_id, "latency_seconds", duration
+            )
+        
+        if self.log_to_console:
+            print(f"   LLM 호출 완료: {duration:.2f}초 소요")
+            if token_usage:
+                print(f"      입력 토큰: {token_usage.get('prompt_tokens', 'N/A')}")
+                print(f"      출력 토큰: {token_usage.get('completion_tokens', 'N/A')}")
     
+    def on_llm_error(self, error: Exception, **kwargs):
+        """LLM 오류 발생"""
+        if self.current_run_id:
+            self.trace_db.end_run(
+                self.current_run_id,
+                output_data=None,
+                status="error",
+                error=str(error)
+            )
+        
+        if self.log_to_console:
+            print(f"    LLM 오류: {error}")
+    
+    def on_chain_start(self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs):
+        """체인 시작"""
+        if self.log_to_console:
+            chain_name = serialized.get('name', 'Unknown')
+            print(f"\n    체인 시작: {chain_name}")
+    
+    def on_chain_end(self, outputs: Dict[str, Any], **kwargs):
+        """체인 완료"""
+        if self.log_to_console:
+            print(f"    체인 완료")
+    
+    def on_retriever_start(self, serialized: Dict[str, Any], query: str, **kwargs):
+        """리트리버 시작"""
+        if self.log_to_console:
+            print(f"\n    검색 시작: '{query[:50]}...'")
+    
+    def on_retriever_end(self, documents: List[Document], **kwargs):
+        """리트리버 완료"""
+        if self.log_to_console:
+            print(f"    검색 완료: {len(documents)}개 문서 반환")    
+
+class LocalMonitoringHandler(BaseCallbackHandler):
+    """
+    로컬 모니터링을 위한 콜백 핸들러
+    
+    모든 LLM 호출을 로컬 SQLite DB에 기록합니다.
+    """
+    
+    def __init__(self, trace_db: LocalTraceDB, log_to_console: bool = True):
+        self.trace_db = trace_db
+        self.log_to_console = log_to_console
+        self.current_run_id = None
+        self.start_time = None
+        
+    def on_llm_start(self, serialized: Dict[str, Any], prompts: List[str], **kwargs):
+        """LLM 호출 시작"""
+        self.start_time = datetime.now()
+        model_name = serialized.get("name", "Unknown")
+        
+        # DB에 실행 기록 시작
+        self.current_run_id = self.trace_db.start_run(
+            name=f"llm_call_{model_name}",
+            run_type="llm",
+            input_data={"prompts": prompts[:1]},  # 첫 프롬프트만 저장
+            metadata={"model": model_name}
+        )
+        
+        if self.log_to_console:
+            print(f"\n   LLM 호출 시작: {self.start_time.strftime('%H:%M:%S')}")
+            print(f"      모델: {model_name}")
+            print(f"      프롬프트 길이: {len(prompts[0])}자")
+    
+    def on_llm_end(self, response, **kwargs):
+        """LLM 호출 완료"""
+        end_time = datetime.now()
+        duration = (end_time - self.start_time).total_seconds()
+        
+        # 토큰 사용량 추출
+        token_usage = {}
+        if hasattr(response, 'llm_output') and response.llm_output:
+            token_usage = response.llm_output.get('token_usage', {})
+        
+        # 출력 텍스트 추출
+        output_text = ""
+        if response.generations:
+            output_text = response.generations[0][0].text if response.generations[0] else ""
+        
+        # DB에 기록
+        if self.current_run_id:
+            self.trace_db.end_run(
+                self.current_run_id,
+                output_data={"response": output_text[:500]},  # 처음 500자만
+                status="success"
+            )
+            
+            # 토큰 사용량 기록
+            if token_usage:
+                self.trace_db.record_token_usage(
+                    self.current_run_id,
+                    token_usage.get('prompt_tokens', 0),
+                    token_usage.get('completion_tokens', 0)
+                )
+            
+            # 응답 시간 메트릭
+            self.trace_db.record_metric(
+                self.current_run_id, "latency_seconds", duration
+            )
+        
+        if self.log_to_console:
+            print(f"   LLM 호출 완료: {duration:.2f}초 소요")
+            if token_usage:
+                print(f"      입력 토큰: {token_usage.get('prompt_tokens', 'N/A')}")
+                print(f"      출력 토큰: {token_usage.get('completion_tokens', 'N/A')}")
+    
+    def on_llm_error(self, error: Exception, **kwargs):
+        """LLM 오류 발생"""
+        if self.current_run_id:
+            self.trace_db.end_run(
+                self.current_run_id,
+                output_data=None,
+                status="error",
+                error=str(error)
+            )
+        
+        if self.log_to_console:
+            print(f"   LLM 오류: {error}")
+    
+    def on_chain_start(self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs):
+        """체인 시작"""
+        if self.log_to_console:
+            chain_name = serialized.get('name', 'Unknown')
+            print(f"\n    체인 시작: {chain_name}")
+    
+    def on_chain_end(self, outputs: Dict[str, Any], **kwargs):
+        """체인 완료"""
+        if self.log_to_console:
+            print(f"    체인 완료")
+    
+    def on_retriever_start(self, serialized: Dict[str, Any], query: str, **kwargs):
+        """리트리버 시작"""
+        if self.log_to_console:
+            print(f"\n    검색 시작: '{query[:50]}...'")
+    
+    def on_retriever_end(self, documents: List[Document], **kwargs):
+        """리트리버 완료"""
+        if self.log_to_console:
+            print(f"    검색 완료: {len(documents)}개 문서 반환")
+
+        
+
+
+
 if __name__ == '__main__':
     LocalTraceDB()
+    print('sqllite 데이터베이스 초기화 완료')
