@@ -49,7 +49,7 @@ class LocalTraceDB:
         ''')
         # 메트릭 테이블
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS metircs(
+            CREATE TABLE IF NOT EXISTS metrics(
                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                        run_id TEXT,
                        metric_name TEXT,
