@@ -417,4 +417,70 @@ if __name__ == '__main__':
 
     # 콜백핸들러 인스턴스(객체) 생성
     monitoring_handler = LocalMonitoringHandler(trace_db=trace_db)
+    # llm 설정(콜백포함)
+    llm = ChatOpenAI(model = 'gpt-4o-mini',callbacks=[monitoring_handler])
+    # 프롬프트 템플릿
+    prompt = ChatPromptTemplate.from_messages([
+     ('system','''당신은 llm 모니터링 전문가입니다. 제공된 문맥을 바탕으로 질문에 답변하세요
+      
+      규칙:
+      1. 문맥에 있는 정보만 사용하세요
+      2. 한국어로 명확하게 답변하세요
+      3. 구조화된 형태로 답변하세요'''),
+     ('human','''문맥:
+      {context}
+      
+      질문:{question}
+      
+      답변:''')   
+    ])
+    def format_docs(docs:List[Document])->str:
+        return '\n\n'.join([  doc.page_content for doc in docs ])
+    
+    documents = [
+        Document(
+            page_content="로컬 모니터링은 외부 서비스 없이 LLM 애플리케이션을 추적하는 방법입니다. "
+                        "SQLite를 사용하여 모든 실행 기록을 로컬에 저장할 수 있습니다.",
+            metadata={"source": "local_monitoring_intro", "topic": "모니터링"}
+        ),
+        Document(
+            page_content="커스텀 콜백 핸들러의 장점: 1) 완전한 제어 가능, 2) 무료, 3) 오프라인 작동, "
+                        "4) 데이터 프라이버시 보장, 5) 커스터마이징 용이",
+            metadata={"source": "callback_benefits", "topic": "콜백"}
+        ),
+        Document(
+            page_content="SQLite 기반 추적의 장점: 파일 하나로 모든 데이터 관리, 설치 불필요, "
+                        "SQL로 복잡한 분석 가능, 백업 및 이동 용이",
+            metadata={"source": "sqlite_benefits", "topic": "저장소"}
+        ),
+        Document(
+            page_content="LLM 모니터링 핵심 메트릭: 응답 시간(Latency), 토큰 사용량(Token Usage), "
+                        "성공률(Success Rate), 비용(Cost), 오류율(Error Rate)",
+            metadata={"source": "metrics", "topic": "메트릭"}
+        ),
+        Document(
+            page_content="로컬 모니터링 vs 클라우드 모니터링: 로컬은 무료/프라이버시 보장, "
+                        "클라우드는 협업/고급분석 용이. 개발 단계에서는 로컬, 프로덕션에서는 클라우드 권장",
+            metadata={"source": "comparison", "topic": "비교"}
+        ),
+    ]
 
+    embeddings = OpenAIEmbeddings(model = 'text-embedding-3-small')
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=50)
+    doc_chunks = text_splitter.split_documents(documents)
+
+    vectorstore = Chroma.from_documents(
+        documents=doc_chunks,
+        collection_name='local_monitorings',
+        embedding=embeddings
+    )
+    retriever 
+    # RAG 체인 구성
+    rag_chain = (
+        {'context':retriever | RunnableLambda(format_docs)
+         'question' : RunnablePassthrough()
+         }
+         | prompt
+         | llm
+         | StrOutputParser()
+    )
