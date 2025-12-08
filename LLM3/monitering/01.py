@@ -98,7 +98,7 @@ class LocalTraceDB:
         conn=sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         #시작시간 가져오기
-        cursor.execute('SELECT start_time FROM runs WHERE ID = ?', (run_id))
+        cursor.execute('SELECT start_time FROM runs WHERE ID = ?', (run_id,))
         result = cursor.fetchone()
         if result:
             start_time = datetime.fromisoformat(result[0])
@@ -136,6 +136,18 @@ class LocalTraceDB:
                        ,(
                            run_id,prompt_tokens,completion_tokens,total_tokens,estimated_cost,model,datetime.now().isoformat()
                        ))
+        conn.commit()
+        conn.close()
+    def record_metric(self, run_id: str, metric_name: str, metric_value: float):
+        """메트릭 기록"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            INSERT INTO metrics (run_id, metric_name, metric_value, recorded_at)
+            VALUES (?, ?, ?, ?)
+        """, (run_id, metric_name, metric_value, datetime.now().isoformat()))
+        
         conn.commit()
         conn.close()
 
@@ -210,6 +222,7 @@ class LocalMonitoringHandler(BaseCallbackHandler):
         self.start_time = None
     def on_llm_start(self, serialized:Dict[str, Any], prompts:List[str], **kwargs):
         '''LLM 호출 시작'''
+        print('''LLM 호출 시작''')
         self.start_time = datetime.now()
         model_name = serialized.get('name','UnKown')
         # db에 실행시간 기록
@@ -225,6 +238,7 @@ class LocalMonitoringHandler(BaseCallbackHandler):
             print(f"    프롬프트길이        : {len(prompts[0])}")
     def on_llm_end(self, response,  **kwargs):
         '''llm 호출 완료'''
+        print('''llm 호출 완료''')
         end_time = datetime.now()
         duration = (end_time - self.start_time).total_seconds()
         
