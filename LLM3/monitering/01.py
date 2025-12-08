@@ -474,13 +474,35 @@ if __name__ == '__main__':
         collection_name='local_monitorings',
         embedding=embeddings
     )
-    retriever 
+    retriever = vectorstore.as_retriever(search_kwargs={'k':3})
     # RAG 체인 구성
     rag_chain = (
-        {'context':retriever | RunnableLambda(format_docs)
+        {'context':retriever | RunnableLambda(format_docs),
          'question' : RunnablePassthrough()
          }
          | prompt
          | llm
          | StrOutputParser()
     )
+
+    # 테스트 문장
+    test_questions = [
+        "로컬 모니터링의 장점은 무엇인가요?",
+        "LLM 모니터링에서 중요한 메트릭은 무엇인가요?",
+        "SQLite 기반 추적의 이점은?"
+    ]
+    # 체인 실행
+    for question in test_questions:
+        print(f'질문 : {question}')
+        answer = rag_chain.invoke(question)
+        print(f'답변 : {answer}\n')
+
+    # 모니터링 - 요약통계
+    summary = trace_db.get_summary()
+    # 최근실행 기록
+    recuent_runs = trace_db.get_recent_runs(5)    
+    for id, run in enumerate(recuent_runs,1):
+        print(f'{id} : {run}')
+
+
+
