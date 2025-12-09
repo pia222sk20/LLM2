@@ -7,3 +7,20 @@ import os
 
 def load_document_and_create_vectorstroe():
     # 문서로드
+    loader = TextLoader('documents/sample.txt',encoding='utf-8')
+    docs = loader.load()
+    # 청크단위로 분리
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size = 500,
+        chunk_overlap=50
+            )
+    chuncks = splitter.split_documents(docs)
+    # 임베딩 모델
+    embeddings = OpenAIEmbeddings(model='text-embedding-3-small')
+    vectorstore =  RedisVectorStore.from_documents(
+        documents=chuncks,
+        embedding=embeddings,
+        redis_url=REDIS_URL,
+        index_name=INDEX_NAME
+    )
+    return vectorstore
