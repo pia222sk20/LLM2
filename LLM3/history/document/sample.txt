@@ -1,0 +1,3 @@
+Redis Stack은 Redis + Search + JSON + TimeSeries + Graph 기능을 포함하는 고급 Redis 배포판입니다.
+RAG는 Retrieval-Augmented Generation의 약어로, 문서를 벡터로 변환해 검색한 후 LLM이 답변을 생성하는 방식입니다.
+LangChain은 LLM 기반 애플리케이션을 쉽게 만들 수 있도록 도와주는 프레임워크입니다.

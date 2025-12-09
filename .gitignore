@@ -6,3 +6,4 @@ ch06/sample.csv
 ch12/glove_data/glove.6B.zip
 ch13/training_checkpoints/
 LLM3/chroma_db_reg2
+LLM3/monitering/local_traces.db
