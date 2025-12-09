@@ -6,7 +6,5 @@ history.add_ai_message("안녕하세요 철수님, 무엇을 도와드릴까요?
 
 # 현재까지의 대화 내용 확인
 for msg in history.messages:
-    print(f"{msg.type}: {msg.content}")
-
-
-    
+    # print(msg)
+    print(f"{msg.type}: {msg.content}    ")    
