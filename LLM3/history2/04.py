@@ -16,11 +16,12 @@ class LangChainRAG:
         self.embeddings = OpenAIEmbeddings(model='text-embedding-3-small')
         
         # OpenAI LLM
-        self.llm = ChatOpenAI(model='gpt-4o-mini', temperature=0.7)
+        self.llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)
         
         # Redis Vector Store
         self.vector_store = None
         print("LangChain RAG 초기화 완료")
+
     def add_documents(self, docs):
         """
         문서 추가
@@ -42,7 +43,7 @@ class LangChainRAG:
         return RedisChatMessageHistory(
             session_id=session_id,
             redis_url=self.redis_url,
-            ttl=3600  # 1시간
+            # ttl=3600  # 1시간
         )
     def create_chain(self):
         """LCEL 체인 생성"""
