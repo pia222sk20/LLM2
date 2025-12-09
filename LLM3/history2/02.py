@@ -1,3 +1,18 @@
+# 반드시 docker desktop을 실행해서 dokcer 가 실행중이여야 한다.
+# docker desktop이 실행안되면
+# 1. powershell 을 관리자 권한으로 실행
+# taskkill /F /IM "Docker Desktop.exe"
+# taskkill /F /IM "com.docker.backend.exe"
+# taskkill /F /IM "com.docker.proxy.exe"
+
+# 2. 재시작
+# net stop com.docker.service
+# net start com.docker.service
+
+# docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+
+
+
 import os
 from langchain_redis import RedisChatMessageHistory
 

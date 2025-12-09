@@ -42,6 +42,7 @@ if os.path.exists(persist_dir):
         collection_name = 'persistent_rag',
         embedding_function = embedding_model
     )
+    
 else:
     raise ValueError('이전단계 chroma_db_reg2 디렉터리 생성 필요')
 
