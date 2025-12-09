@@ -5,9 +5,9 @@ from langchain_community.document_loaders import TextLoader
 from config import REDIS_URL, INDEX_NAME
 import os
 
-def load_document_and_create_vectorstroe():
+def create_vectorstore(filepath:str = 'documents/sample.txt'):
     # 문서로드
-    loader = TextLoader('documents/sample.txt',encoding='utf-8')
+    loader = TextLoader(filepath,encoding='utf-8')
     docs = loader.load()
     # 청크단위로 분리
     splitter = RecursiveCharacterTextSplitter(
