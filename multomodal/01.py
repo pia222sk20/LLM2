@@ -9,7 +9,7 @@ image_processor =  AutoImageProcessor.from_pretrained(
     use_fast=True
 )
 
-model = AutoModelForImageClassification(
+model = AutoModelForImageClassification.from_pretrained(
     model_name,    
     device_map = 'auto'
 )
