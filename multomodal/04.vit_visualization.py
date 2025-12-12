@@ -23,7 +23,7 @@ def visualize_attention(image_path, model_name = 'google/vit-base-patch16-224'):
     print(f'모델 : {model_name}')
 
     print("\n[2단계] 이미지 로드 및 전처리 중....")
-    if image_path.startwith('http'):
+    if image_path.startswith('http'):
         image = Image.open(requests.get(image_path, stream=True).raw)
     else:
         image = Image.open(image_path)
