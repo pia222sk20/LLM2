@@ -9,6 +9,7 @@ from transformers import (
 )
 from torchvision.transforms import (
     RandomResizedCrop,
+    Resize,
     Compose,
     Normalize,
     ToTensor,
@@ -52,14 +53,16 @@ size = ( image_processor.size['shortest_edge']
         )
 # 훈련용 데이터 변환(데이터 증강 포함)
 train_transforms =  Compose([
-    RandomResizedCrop(size),
+    # RandomResizedCrop(size),
+    Resize(256),
     RandomHorizontalFlip(p=0.5),
     ToTensor(),
     normalize
 ])
 # 검증용 데이터 변환(데이터 증강 없음)
 val_transforms =  Compose([
-    RandomResizedCrop(size),    
+    # RandomResizedCrop(size),    
+    Resize(256),
     ToTensor(),
     normalize
 ])
