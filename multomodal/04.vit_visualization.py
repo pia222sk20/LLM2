@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from transformers import AutoImageProcessor, AutoModel
 
-def visualize_attention(image_path, model_name = 'google/vit_base_patch16_224'):
+def visualize_attention(image_path, model_name = 'google/vit-base-patch16-224'):
     '''vit 어텐션 맵을 시각화'''
     print('\n[1단계]모델 로드중...')
     image_processor = AutoImageProcessor.from_pretrained(model_name)
