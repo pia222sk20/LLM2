@@ -25,7 +25,7 @@ for idx, url in enumerate(image_urls,1):
         image =  Image.open( requests.get(url, stream=True).raw )
         print(f'이미지 크기 : {image.size}')
         # 이미지 전처리
-        inputs = image_processor(image, return_tensor='pt').to(model.device)
+        inputs = image_processor(image, return_tensors='pt').to(model.device)
         print(f"전처리 후 텐서의 크기 : {inputs['pixel_values'].shape}")
         # 추론
         with torch.no_grad():
