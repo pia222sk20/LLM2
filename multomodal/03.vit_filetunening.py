@@ -50,18 +50,18 @@ size = ( image_processor.size['shortest_edge']
         else (image_processor.size['height'], image_processor.size['width'])
         )
 # 훈련용 데이터 변환(데이터 증강 포함)
-train_transforms =  Compose(
+train_transforms =  Compose([
     RandomResizedCrop(size),
     RandomHorizontalFlip(p=0.5),
     ToTensor(),
     normalize
-)
+])
 # 검증용 데이터 변환(데이터 증강 없음)
-val_transforms =  Compose(
+val_transforms =  Compose([
     RandomResizedCrop(size),    
     ToTensor(),
     normalize
-)
+])
 
 # 변환적용
 def process_train(examples):
@@ -76,5 +76,56 @@ def process_val(examples):
     ]
     return examples
 
-train_dataset = dataset['train'].with_transform()
-test_dataset = dataset['test'].with_transform()
+train_dataset = dataset['train'].with_transform(process_train)
+test_dataset = dataset['test'].with_transform(process_val)
+
+print('\n데이터증강 파이프라인 설정 완료')
+
+print('\n모델 로드 중 ....')
+
+# 라벨 매핑 생성
+labels = selected_classes
+label2id =  {label : i  for i, label in enumerate(labels)}
+id2label = {i : label  for i, label in enumerate(labels)}
+
+model = AutoModelForImageClassification.from_pretrained(
+    checkpoint,
+    num_labels = len(labels),
+    id2label = label2id,
+    label2id = label2id,
+    ignore_mismatched_sizes = True  # 분류헤더의 크기가 불일치 무시
+)
+
+# 평가 메트릭 정의
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
+    predictions = np.argmax(predictions,axis=1)
+    accuracy =  accuracy_score(labels,predictions)
+    precision, recall, f1, _ =  precision_recall_fscore_support(
+        labels,predictions,average='weighted'
+    )
+    return {
+        'accuracy' : accuracy,
+        'precision' : precision,
+        'recall' : recall,
+        'f1' : f1
+    }
+
+# 학습설정
+training_args =  TrainingArguments(
+    output_dir='./vit_finetuned_food101',
+    remove_unused_columns=False,
+    eval_strategy='epoch',
+    save_strategy='epoch',
+    learning_rate= 5e-5,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
+    num_train_epochs=3,
+    weight_decay=0.01,
+    load_best_model_at_end= True,
+    metric_for_best_model='accuracy',
+    logging_dir='./log',
+    save_total_limit=2,
+    seed=42
+)
+#
