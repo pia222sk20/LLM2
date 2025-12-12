@@ -9,7 +9,7 @@
 
 # conda create -n vit_env python=3.10 -y
 # conda activate vit_env
-# conda install pytorch torchvision transformer datasets accelerate
+# conda install pytorch torchvision transformers datasets accelerate
 # conda install pillow requests numpy scikit-learn matplotlib tqdm 
 # pip install torch
 
@@ -17,3 +17,25 @@
 import torch
 print(f'torch version : {torch.__version__}')
 print(f'cuda  : {torch.cuda.is_available()}')
+import transformers
+print(f'transformers : {transformers.__version__}')
+
+package_to_check = [
+    ('numpy','Numpy'),
+    ('PIL','Pillow'),
+    ('matplotlib','Matpltlib'),
+    ('sklearn','Sckit-learn'),
+    ('requests','Requests'),
+]
+all_check = True
+for module_name , install_name in package_to_check:
+    try:
+        module = __import__(module_name)
+        version = getattr(module,"__version__","unknown")
+        print(f'    {install_name} : {version}')
+    except ImportError:
+        print(f'    {install_name} : Not Found')
+        all_check=False
+    
+if all_check:
+    print('all import success')
