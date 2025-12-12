@@ -17,6 +17,7 @@ model = AutoModelForImageClassification.from_pretrained(
 image_urls = [
 "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/pipeline-cat-chonk.jpeg",
 "http://images.cocodataset.org/val2017/000000039769.jpg",
+"https://cdn.pixabay.com/photo/2024/05/26/10/15/bird-8788491_1280.jpg"
 ]
 
 for idx, url in enumerate(image_urls,1):
