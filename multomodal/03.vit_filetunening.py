@@ -23,11 +23,14 @@ selected_classes = ['apple_pie','baby_back_ribs','baklava','beef_carpaccio','bee
 path = r'C:\Users\Playdata2\.cache\kagglehub\datasets\dansbecker\food-101\versions\1\food-101\food-101\images'
 # dataset = load_dataset('imagefolder', data_dir=path, split='train[:1000]')  # 로컬데이터를 사용 
 dataset = load_dataset('food101', split='train[:1000]')  # 허깅페이스 데이터셋 사용
-print(dataset)
+
+# 수정부분
+lable_names = dataset.features['label'].names
+selected_ids = [lable_names.index(cls) for cls in selected_classes]
 
 # 선택한 클래스만 필터링
-def filter_classes(dataset):
-    return dataset['label'] in range(len(selected_classes))
+def filter_classes(example):
+    return example['label'] in selected_ids
 
 dataset = dataset.filter(filter_classes)
 dataset = dataset.train_test_split(test_size=0.2,seed=42)
