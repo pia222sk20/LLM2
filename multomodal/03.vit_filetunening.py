@@ -28,8 +28,8 @@ def main():
     # 1. 데이터셋 로드 (Food-101의 일부만 사용)
     print("\n[1단계] 데이터셋 로드 중...")
     
-    # Food-101 데이터셋에서 5개 클래스만 선택
-    selected_classes = ["apple_pie", "baby_back_ribs", "baklava", "beef_carpaccio", "beef_tartare"]
+    # Food-101 데이터셋에서 5개 클래스만 선택 
+    selected_classes = ["apple_pie", "baby_back_ribs", "baklava", "beef_carpaccio", "beef_tartare"]  # [0 1 2 3 4]
     
     dataset = load_dataset("food101", split="train") 
     
@@ -40,8 +40,8 @@ def main():
     
     dataset = dataset.filter(filter_classes)
     
-    if len(dataset) > 1000:
-        dataset = dataset.shuffle(seed=42).select(range(1000))
+    # if len(dataset) > 1000:
+    #     dataset = dataset.shuffle(seed=42).select(range(1000))
 
     dataset = dataset.train_test_split(test_size=0.2, seed=42)
     
@@ -183,7 +183,7 @@ def main():
         train_dataset=train_dataset,
         eval_dataset=test_dataset,
         compute_metrics=compute_metrics,
-        data_collator=collate_fn
+        data_collator=collate_fn  # 허깅페이스 Trainer api를 이용할때 반드시 적용(학습에 필요한 데이터만 처리할수 있도록)
     )
     
     print("\n학습을 시작합니다...")    
