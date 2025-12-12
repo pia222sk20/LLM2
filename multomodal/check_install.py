@@ -9,9 +9,10 @@
 
 # conda create -n vit_env python=3.10 -y
 # conda activate vit_env
-# conda install pytorch torchvision transformers datasets accelerate
+# conda install pytorch torchvision transformers datasets 
 # conda install pillow requests numpy scikit-learn matplotlib tqdm 
 # pip install torch
+# pip install accelerate
 
 # 라이브러리 설치 확인
 import torch
