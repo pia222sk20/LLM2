@@ -20,7 +20,8 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 # Food-101 5개 클래스만 선택
 selected_classes = ['apple_pie','baby_back_ribs','baklava','beef_carpaccio','beef_tartare']
 path = r'C:\Users\Playdata2\.cache\kagglehub\datasets\dansbecker\food-101\versions\1\food-101\food-101\images'
-dataset = load_dataset(path, split='train[:1000]')
+dataset = load_dataset('imagefolder', data_dir=path, split='train[:1000]')  # 로컬데이터를 사용 
+# dataset = load_dataset('food101', data_dir=path, split='train[:1000]')  # 허깅페이스 데이터셋 사용
 print(dataset)
 
 # 선택한 클래스만 필터링
