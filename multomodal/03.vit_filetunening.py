@@ -128,4 +128,26 @@ training_args =  TrainingArguments(
     save_total_limit=2,
     seed=42
 )
-#
+# Trainer 생성 및 학습
+trainer = Trainer(
+    model=model,
+    args = training_args,
+    train_dataset=train_dataset,
+    eval_dataset=test_dataset,
+    compute_metrics= compute_metrics
+)
+print('\n학습을 시작합니다.')
+try:
+    train_results = trainer.train()
+    # 최종평가
+    eval_results =  trainer.evaluate()
+    print('학습완료')
+    print(f"정확도(accuracy) : {eval_results['eval_accuracy']:4.f}")
+    print(f"정밀도(Precision) : {eval_results['eval_precision']:4.f}")
+    print(f"재현율(Recall) : {eval_results['eval_recall']:4.f}")
+    print(f"F1 점수(F1) : {eval_results['eval_f1']:4.f}")
+    # 모델 저장
+    trainer.save_model('./vit_finetuned_food101_final')
+    print(f"모델 저장완료 : ./vit_finetuned_food101_final")
+except Exception as e:
+    print(f'error : {e}')
