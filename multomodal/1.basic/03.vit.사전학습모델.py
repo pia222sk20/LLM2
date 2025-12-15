@@ -50,5 +50,78 @@ def use_timm_vit():
     transform = timm.data.create_transform(**data_config, is_training=False)
     return model, transform
 
+def classify_image_hf(model, processor, image):
+    """Hugging Face 모델로 이미지 분류"""   
+    
+    if model is None:
+        print("  모델이 로드되지 않았습니다.")
+        return None
+    
+    # 이미지 전처리
+    inputs = processor(images=image, return_tensors="pt")
+    print(f"\n[전처리된 입력]")
+    print(f"  pixel_values shape: {inputs['pixel_values'].shape}")
+    
+    # 추론
+    with torch.no_grad():
+        outputs = model(**inputs)
+    
+    logits = outputs.logits
+    print(f"\n[모델 출력]")
+    print(f"  logits shape: {logits.shape}")
+    
+    # Top-5 예측
+    probs = F.softmax(logits, dim=-1)
+    top5_probs, top5_indices = torch.topk(probs, 5)
+    
+    print(f"\n[Top-5 예측 결과]")
+    for i, (prob, idx) in enumerate(zip(top5_probs[0], top5_indices[0])):
+        label = model.config.id2label[idx.item()]
+        print(f"  {i+1}. {label}: {prob.item():.4f} ({prob.item()*100:.2f}%)")
+    
+    return top5_probs[0], top5_indices[0]
+
+
+def classify_image_timm(model, transform, image):
+    """timm 모델로 이미지 분류"""    
+    
+    if model is None:
+        print("  모델이 로드되지 않았습니다.")
+        return None
+    
+    # 이미지 전처리
+    img_tensor = transform(image).unsqueeze(0)
+    print(f"\n[전처리된 입력]")
+    print(f"  tensor shape: {img_tensor.shape}")
+    
+    # 추론
+    with torch.no_grad():
+        outputs = model(img_tensor)
+    
+    print(f"\n[모델 출력]")
+    print(f"  outputs shape: {outputs.shape}")
+    
+    # Top-5 예측
+    probs = F.softmax(outputs, dim=-1)
+    top5_probs, top5_indices = torch.topk(probs, 5)
+    
+    # ImageNet 클래스 이름 로드
+    try:
+        url = "https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt"
+        response = requests.get(url, timeout=10)
+        categories = [s.strip() for s in response.text.splitlines()]
+        
+        print(f"\n[Top-5 예측 결과]")
+        for i, (prob, idx) in enumerate(zip(top5_probs[0], top5_indices[0])):
+            label = categories[idx.item()] if idx.item() < len(categories) else f"class_{idx.item()}"
+            print(f"  {i+1}. {label}: {prob.item():.4f} ({prob.item()*100:.2f}%)")
+            
+    except Exception as e:
+        print(f"\n[Top-5 예측 결과 (인덱스)]")
+        for i, (prob, idx) in enumerate(zip(top5_probs[0], top5_indices[0])):
+            print(f"  {i+1}. class_{idx.item()}: {prob.item():.4f} ({prob.item()*100:.2f}%)")
+    
+    return top5_probs[0], top5_indices[0]
+
 if __name__=='__main__':
     use_timm_vit()
