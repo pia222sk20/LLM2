@@ -135,4 +135,4 @@ if __name__=='__main__':
     print('\n\n[ timm 추론]...')
     for file in files:
         test_img = Image.open(file).convert('RGB')
-        classify_image_timm(timm_model,timm_process,test_img)     
+        classify_image_timm(timm_model,timm_process,test_img)
