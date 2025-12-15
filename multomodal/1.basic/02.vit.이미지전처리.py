@@ -81,13 +81,13 @@ def vi_standard_preprocessing(img):
 
     return img_tensor, preprocess
 
+IMAGE_SIZE = 224
+MEAN = [0.485, 0.456, 0.406]
+STD = [0.229, 0.224, 0.225]
+
 # 학습용 데이터 증강
 def training_augmentation(img):
-    """학습 시 사용하는 데이터 증강"""    
-    
-    IMAGE_SIZE = 224
-    MEAN = [0.485, 0.456, 0.406]
-    STD = [0.229, 0.224, 0.225]
+    """학습 시 사용하는 데이터 증강"""   
     
     # 학습용 증강 파이프라인
     train_transform = transforms.Compose([
@@ -124,13 +124,55 @@ def training_augmentation(img):
     
     return train_transform, val_transform, augmented_images
 
+# 전처리 시각화
+def visualize_preprocess(img, img_tensor, augmented_images):
+    '''전처리과정 시각화'''
+    def denormalize(tensor, mean=MEAN,std=STD):
+        '''정규화 역변환'''
+        tensor = tensor.clone()
+        for t,m,s in zip(tensor,mean,std):
+            t.mul_(s).add(m)
+        return torch.clamp(tensor,0,1)
+    fig, axes = plt.subplots(2,3, figsize = (12,8) )
+    # 원본 이미지
+    axes[0,0].imshow(img)
+    axes[0,0].set_title('Origianl Image')
+    axes[0,0].axis('off')
 
+    # 전처리된 이미지
+    img_display =  denormalize(img_tensor)
+    axes[0,1].imshow(img_display.permute(1,2,0).numpy())
+    axes[0,1].set_title('PreProcess 224 x 224')
+    axes[0,1].axis('off')
 
+    # 패치 분할 시각화
+    patch_size = 16
+    img_np = img_display.permute(1,2,0).numpy()
+    axes[0,2].imshow(img_np)
+    # 그리드 그리기
+    for i in range(0,224,patch_size):
+        axes[0,2].axhline(y=i, color='red',linewidth=0.5)
+        axes[0,2].axvline(y=i, color='red',linewidth=0.5)
+    axes[0,2].set_title('patch image')
+    axes[0,2].axis('off')
+
+    # 증강된 이미지들
+    for i, aug_img in enumerate(augmented_images[:3]):
+        aug_display = denormalize(aug_img)
+        axes[1, i].imshow(aug_display.permute(1,2,0).numpy())
+        axes[1, i].set_title(f'Agumented {i+1}')
+        axes[1, i].axis('off')
+    plt.tight_layout()
+    plt.show()
+    # 저장
+    plt.savefig('02.vit.preprocess.png', bbox_inches='tight')
 
 
 if __name__ == '__main__':
+    os.environ['KMP_DUPLICATE_LIB_OK']='TRUE'
     sample_images = download_sample_images('./download_img')
     for img in sample_images:
         img = basic_image_loading(img)
         img_tensor, preprocess = vi_standard_preprocessing(img)
         train_transform, val_transform, augmented_images = training_augmentation(img)
+        visualize_preprocess(img,img_tensor,augmented_images)
