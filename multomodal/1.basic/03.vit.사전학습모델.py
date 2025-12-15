@@ -42,6 +42,13 @@ def use_timm_vit():
     print(f'총   {len(vit_models)}개 모델')
 
     model = timm.create_model('vit_base_patch16_224',pretrained=True)
+    model.eval()
+    print(f"실제 다운로드 모델명 : vit_base_patch16_224.{model.default_cfg['tag']}")
+
+    # timm의 데이터 설정 가져오기
+    data_config = timm.data.resolve_model_data_config(model)
+    transform = timm.data.create_transform(**data_config, is_training=False)
+    return model, transform
 
 if __name__=='__main__':
     use_timm_vit()
