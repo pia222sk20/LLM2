@@ -103,8 +103,8 @@ def self_attention():
     qkv = qkv_proj(x)
     print(f'    QKV shape:{qkv.shape}')
     # Q K V  분리
-    qkv = qkv.reshap(batch_size, seq_len,3, num_heads,head_dim)  # [B, N,3,  heads, head_dim]
-    qkv = qkv.permut(2,0,3,1,4)  # [3,B,heads,N,head_dim]
+    qkv = qkv.reshape(batch_size, seq_len,3, num_heads,head_dim)  # [B, N,3,  heads, head_dim]
+    qkv = qkv.permute(2,0,3,1,4)  # [3,B,heads,N,head_dim]
     q, k , v = qkv[0],qkv[1],qkv[2]
     print(f'Q shape : {q.shape}') # 동일한 모양
     print(f'K shape : {k.shape}') # 동일한 모양
@@ -215,6 +215,15 @@ def transformer_block():
     return block
 
 if __name__=='__main__':
-    patch_embedding()
-
-
+    # 1 패치임베딩
+    patcheds = patch_embedding()
+    # 2 위치임베딩
+    pos_embed = positional_embedding()
+    # 3. CLS 토큰
+    embeddings = cls_token()
+    # 4. self-Attention
+    attention = self_attention()
+    # 5. MLP
+    mlp_output = mlp()
+    # 6. transformer block
+    block = transformer_block()
