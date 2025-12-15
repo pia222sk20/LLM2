@@ -41,5 +41,7 @@ def use_timm_vit():
             print(f'    - {model_name}')
     print(f'총   {len(vit_models)}개 모델')
 
+    model = timm.create_model('vit_base_patch16_224',pretrained=True)
+
 if __name__=='__main__':
     use_timm_vit()
