@@ -36,8 +36,9 @@ def use_timm_vit():
     import timm
     # 사용가능한 vit 모델 목록
     vit_models = timm.list_models('vit*', pretrained=True)
-    for model_name in vit_models[:10]:
-        print(f'    - {model_name}')
+    for model_name in vit_models:
+        if 'vit_base_patch16_224' in model_name:
+            print(f'    - {model_name}')
     print(f'총   {len(vit_models)}개 모델')
 
 if __name__=='__main__':
