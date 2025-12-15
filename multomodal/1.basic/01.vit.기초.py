@@ -57,6 +57,13 @@ def positional_embedding():
     print(f'    총 위치수 : {num_patches+1}  (패치 196 + cls토큰 1)')
     # 배치차원 제거  :각 위치를 하나의 벡터로 다루기위해 배치크기가 1인 형태는 분석시 불 필요
     pos_emb = position_embedding.squeeze(0)
+    # 코사인 유사도 계산을 위해서 정규화는 필수
+    pos_emb_norm = pos_emb/pos_emb.norm(dim=1,keepdim=True)  # 단위벡터로 나눔
+    # 코사인 유사도 행렬
+    similarity =  torch.mm(pos_emb_norm,pos_emb_norm.t())
+    print(f'    유사도 행렬 shape : {similarity.shape}')   # [197 197]
+    # 학습전이라서 랜덤이지만 학습후에는 인접 패치끼지 유사해짐
+    return position_embedding
 
 
 
