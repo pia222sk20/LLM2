@@ -44,4 +44,23 @@ def patch_embedding():
     return patches_flat
 
 
+# 위치임베딩의 역활
+def positional_embedding():
+    '''위치 임베딩'''
+    num_patches = 196
+    embedding_dim = 768
+
+    # 위치 임베딩 생성
+    # 이 텐서는 학습대상 Optimizer의해 업데이트
+    position_embedding =  nn.Parameter( torch.randn(1, num_patches+1,embedding_dim))   # +1은 CLS 토큰
+    print(f'    위치 임베딩 shape : {position_embedding.shape}')
+    print(f'    총 위치수 : {num_patches+1}  (패치 196 + cls토큰 1)')
+    # 배치차원 제거  :각 위치를 하나의 벡터로 다루기위해 배치크기가 1인 형태는 분석시 불 필요
+    pos_emb = position_embedding.squeeze(0)
+
+
+
+if __name__=='__main__':
+    patch_embedding()
+
 
