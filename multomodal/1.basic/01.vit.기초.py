@@ -245,9 +245,23 @@ def _visualization_cls_attention(attn, image_size=224, patch_size=16):
     return attn_map.detach().cpu().numpy()
 
 # 더미이미지 + Attention 시각화
-def demo_cls_attention_visualization():
+import requests
+from PIL import Image
+from io import BytesIO
+def demo_cls_attention_visualization(is_dummy:bool = True, url:str = None,image_size:str = 224):
     # 1. 더미 이미지
-    image = np.random.rand(224,224,3)
+    if is_dummy:
+        image = np.random.rand(224,224,3)
+    elif url.startswith("http"):
+        response = requests.get(url)
+        image = Image.open(BytesIO(response.content)).convert('RGB')
+        image = image.resize((image_size, image_size))
+        image = np.array(image) / 255.0  # 정규화
+    else:  # 로컬 이미지 로드
+        image = Image.open(url).convert('RGB')
+        image = image.resize((image_size, image_size))
+        image = np.array(image) / 255.0  # 정규화
+
     # self - attention 계산
     attn =  self_attention()
     # 3. attention map 생성
@@ -256,6 +270,7 @@ def demo_cls_attention_visualization():
     plt.imshow(image)
     plt.imshow(attn_map, cmap='jet', alpha=0.5)
     plt.axis('off')
+    # plt.savefig('vit_visialization.png')
     plt.show()
 
 
@@ -263,4 +278,6 @@ def demo_cls_attention_visualization():
 
 if __name__=='__main__':
 #    main()
-    demo_cls_attention_visualization()
+    os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+    url = 'C:/2.Lecture/LLM2/multomodal/1.basic/img/Cat03.jpg'
+    demo_cls_attention_visualization(False, url=url)
