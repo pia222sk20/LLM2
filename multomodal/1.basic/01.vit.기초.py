@@ -214,7 +214,9 @@ def transformer_block():
     
     return block
 
-if __name__=='__main__':
+# self attention이 어디를 주목하는지 시각화
+
+def main():
     # 1 패치임베딩
     patcheds = patch_embedding()
     # 2 위치임베딩
@@ -227,3 +229,38 @@ if __name__=='__main__':
     mlp_output = mlp()
     # 6. transformer block
     block = transformer_block()
+def _visualization_cls_attention(attn, image_size=224, patch_size=16):
+    '''cls토큰이 각 패치를 얼마나 주목하는지 시각화
+    attn : [1, heads,197,197]
+    '''
+    # cls -> patch attention만 추출
+    cls_attn = attn[0, :, 0 , 1: ] # [heads, 196]
+    # head평균
+    cls_attn_mean = cls_attn.mean(dim=0)  # [196]
+    # 14 x 14 reshape
+    grid_size = image_size // patch_size
+    attn_map = cls_attn_mean.reshape(grid_size,grid_size)
+    # 정규화
+    attn_map = attn_map / attn_map.max()
+    return attn_map.detach().cpu().numpy()
+
+# 더미이미지 + Attention 시각화
+def demo_cls_attention_visualization():
+    # 1. 더미 이미지
+    image = np.random.rand(224,224,3)
+    # self - attention 계산
+    attn =  self_attention()
+    # 3. attention map 생성
+    attn_map = _visualization_cls_attention(attn)
+    # 시각화
+    plt.imshow(image)
+    plt.imshow(attn_map, cmap='jet', alpha=0.5)
+    plt.axis('off')
+    plt.show()
+
+
+
+
+if __name__=='__main__':
+#    main()
+    demo_cls_attention_visualization()
