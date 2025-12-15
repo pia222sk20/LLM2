@@ -43,7 +43,7 @@ def basic_image_loading(image_path:str):
     img = Image.open(image_path)
     print(f'[이미지 정보]')
     print(f'이미지 모드 : {img.mode}')
-    print(f'이미지 크기 : {img.shape}')
+    print(f'이미지 크기 : {img.size}')
 
     # numpy 배열로 변환
     img_array = np.array(img)
@@ -70,13 +70,13 @@ def vi_standard_preprocessing(img):
     ])
 
     print(f'[전처리 결과]')
-    print(f'원본이미지 크기 : {img.shape}')
+    print(f'원본이미지 크기 : {img.size}')
     img_tensor = preprocess(img)
     print(f'전처리 후 크기 : {img_tensor.shape}')
     print(f'전처리 후 값 범위 : {img_tensor.min()} ~ {img_tensor.max()}')
 
     # 배치 차원 추가
-    img_batch = img_tensor.unsquezze(0)
+    img_batch = img_tensor.unsqueeze(0)
     print(f'배치처리 후 크기 : {img_batch.shape}')
 
     return img_tensor, preprocess
@@ -123,6 +123,10 @@ def training_augmentation(img):
               f"min={aug_img.min():.3f}, max={aug_img.max():.3f}")
     
     return train_transform, val_transform, augmented_images
+
+
+
+
 
 if __name__ == '__main__':
     sample_images = download_sample_images('./download_img')
