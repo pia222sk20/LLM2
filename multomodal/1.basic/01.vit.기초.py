@@ -44,7 +44,7 @@ def patch_embedding():
     return patches_flat
 
 
-# 위치임베딩의 역활
+# 2. 위치임베딩의 역활
 def positional_embedding():
     '''위치 임베딩'''
     num_patches = 196
@@ -65,6 +65,102 @@ def positional_embedding():
     # 학습전이라서 랜덤이지만 학습후에는 인접 패치끼지 유사해짐
     return position_embedding
 
+# 3. CLS 토큰
+def cls_token():
+    embedding_dim = 768
+    num_paches = 196
+    batch_size = 2
+    #cls 토큰 생성
+    cls_token = nn.Parameter(torch.rand(1,1,embedding_dim))  # 학습을 통해 이미지를 요약하는 벡터로 진화
+    print(f'    CLS 토큰 shape : {cls_token.shape}')  # [1,1,768]
+    # 배치크기에 맞게 CLS 토큰 확장
+    cls_tokens = cls_token.expand(batch_size,-1,-1)  # 배치마다 동일한 cls 토큰이 필요, expand는 view만 확장
+    print(f'    배치확장 후 shape : {cls_tokens.shape}')  # [2,1,768]
+    #패치 임베딩 생성
+    patch_embeddings = torch.randn(batch_size, num_paches,embedding_dim)
+    print(f'    패치 임베딩 shape : {patch_embeddings.shape}')
+    # CLS 토큰을 시퀀스 맨 앞에 추가
+    embeddings = torch.cat([cls_tokens,patch_embeddings], dim=1)  # [cls | patch1.... patch196]
+    print(f'결합후 shape : {embeddings.shape}') #[2,197,768]    
+    return embeddings
+
+# 4 self-attention
+def self_attention():
+    '''self-attention 메커니즘
+    Mukti-Head Self-attention의 구성요소
+        Q(query) K(key) V(value) 
+    '''
+    embedding_dim = 768
+    num_heads = 12
+    head_dim = embedding_dim//num_heads  # 각 헤드가 담당하는 차원
+    seq_len  = 197 # 196패치 + 1 CLS 
+    batch_size = 1  # 샘플1개
+    # 더미데이터 생성
+    x = torch.randn(batch_size,seq_len,embedding_dim)
+    # QKV 선형 레이어
+    qkv_proj = nn.Linear(embedding_dim,embedding_dim*3) # 하나의 Linear 연산으로 QKV 동시에 생성
+    # QKV 계산
+    qkv = qkv_proj(x)
+    print(f'    QKV shape:{qkv.shape}')
+    # Q K V  분리
+    qkv = qkv.reshap(batch_size, seq_len,3, num_heads,head_dim)  # [B, N,3,  heads, head_dim]
+    qkv = qkv.permut(2,0,3,1,4)  # [3,B,heads,N,head_dim]
+    q, k , v = qkv[0],qkv[1],qkv[2]
+    print(f'Q shape : {q.shape}') # 동일한 모양
+    print(f'K shape : {k.shape}') # 동일한 모양
+    print(f'V shape : {v.shape}') # 동일한 모양
+    # Attention Score 계산
+    # Attention Score 계산
+    scale = head_dim ** -0.5
+    attn = (q @ k.transpose(-2, -1)) * scale
+    print(f"\n[Attention Score]")
+    print(f"  Attention shape: {attn.shape}")  # [1, 12, 197, 197]
+    
+    # Softmax
+    attn = attn.softmax(dim=-1)
+    print(f"  Softmax 후 합계 (각 행): {attn[0, 0, 0].sum().item():.4f}")  # 1.0
+    
+    # Value와 곱하기
+    out = attn @ v
+    print(f"\n[Attention 적용]")
+    print(f"  출력 shape: {out.shape}")  # [1, 12, 197, 64]
+    
+    # 헤드 결합
+    out = out.transpose(1, 2).reshape(batch_size, seq_len, embedding_dim)
+    print(f"  헤드 결합 후: {out.shape}")  # [1, 197, 768]
+    
+    return attn
+
+def mlp():
+    '''mlp 블럭'''
+    embedding_dim = 768
+    mlp_dim = embedding_dim*4 # 일반적으로 4배 확장
+    print(f'입력/출력 차원 : {embedding_dim}')
+    print(f'히든 차원 : {mlp_dim}')
+    # MLP 블럭 정의
+    mlp = nn.Sequential(
+        nn.Linear(embedding_dim,mlp_dim),
+        nn.GELU(), # 단순선형을 비 선형으로 변형
+        nn.Linear(mlp_dim,embedding_dim)
+        )
+     # 파라미터 수 계산
+    total_params = sum(p.numel() for p in mlp.parameters())
+    print(f"  MLP 파라미터 수: {total_params:,}")
+    
+    # 더미 입력
+    x = torch.randn(1, 197, embedding_dim)
+    print(f"\n[입력/출력]")
+    print(f"  입력 shape: {x.shape}")
+    
+    # MLP 적용
+    out = mlp(x)
+    print(f"  출력 shape: {out.shape}")
+    
+    print(f"\n[GELU 활성화 함수]")
+    print(f"  GELU(x) = x * Phi(x)")
+    print(f"  ReLU보다 부드럽고, 음수 입력에도 작은 값 출력")
+    
+    return out
 
 
 if __name__=='__main__':
