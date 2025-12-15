@@ -8,4 +8,5 @@ ch13/training_checkpoints/
 LLM3/chroma_db_reg2
 LLM3/monitering/local_traces.db
 multomodal/vit_finetuned_food101/
-multomodal/vit_finetuned_food101_final
+multomodal/vit_finetuned_food101_final/
+multomodal/Data/
