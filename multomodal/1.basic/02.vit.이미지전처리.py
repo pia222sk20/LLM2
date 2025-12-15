@@ -152,7 +152,7 @@ def visualize_preprocess(img, img_tensor, augmented_images):
     # 그리드 그리기 - 실제 패치로 임베딩한 공간정보가 아니라 .vit가 이미지를 공간단위로 나누어 본다
     for i in range(0,224,patch_size):
         axes[0,2].axhline(y=i, color='red',linewidth=0.5)
-        axes[0,2].axvline(y=i, color='red',linewidth=0.5)
+        axes[0,2].axvline(x=i, color='red',linewidth=0.5)
     axes[0,2].set_title('patch image')
     axes[0,2].axis('off')
 
