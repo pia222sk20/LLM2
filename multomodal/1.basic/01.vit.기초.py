@@ -162,6 +162,57 @@ def mlp():
     
     return out
 
+# Transformer Encoderder block 구조
+def transformer_block():
+    '''Transformer Encoder 블럭'''
+    class TransformerBlock(nn.Module):
+        """간단한 Transformer Block 구현"""
+        def __init__(self, dim=768, num_heads=12, mlp_ratio=4.0):
+            super().__init__()
+            self.norm1 = nn.LayerNorm(dim)
+            self.attn = nn.MultiheadAttention(dim, num_heads, batch_first=True)
+            self.norm2 = nn.LayerNorm(dim)
+            self.mlp = nn.Sequential(
+                nn.Linear(dim, int(dim * mlp_ratio)),
+                nn.GELU(),
+                nn.Linear(int(dim * mlp_ratio), dim),
+            )
+        
+        def forward(self, x):
+            # Pre-norm 구조
+            # Attention with residual
+            x = x + self.attn(self.norm1(x), self.norm1(x), self.norm1(x))[0]
+            # MLP with residual
+            x = x + self.mlp(self.norm2(x))
+            return x
+    
+    # 블록 생성
+    block = TransformerBlock()
+    
+    # 파라미터 수
+    total_params = sum(p.numel() for p in block.parameters())
+    print(f"\n[Transformer Block 구성]")
+    print(f"  1. Layer Normalization")
+    print(f"  2. Multi-Head Self-Attention")
+    print(f"  3. Residual Connection")
+    print(f"  4. Layer Normalization")
+    print(f"  5. MLP (Feed-Forward)")
+    print(f"  6. Residual Connection")
+    print(f"\n  블록당 파라미터 수: {total_params:,}")
+    
+    # 더미 입력
+    x = torch.randn(1, 197, 768)
+    print(f"\n[입력/출력]")
+    print(f"  입력 shape: {x.shape}")
+    
+    out = block(x)
+    print(f"  출력 shape: {out.shape}")
+    
+    # ViT-Base는 12개 블록
+    print(f"\n[ViT-Base 전체 파라미터]")
+    print(f"  12개 블록 파라미터: {total_params * 12:,}")
+    
+    return block
 
 if __name__=='__main__':
     patch_embedding()
