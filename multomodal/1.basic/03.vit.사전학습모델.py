@@ -124,4 +124,9 @@ def classify_image_timm(model, transform, image):
     return top5_probs[0], top5_indices[0]
 
 if __name__=='__main__':
-    use_timm_vit()
+    # 모델, 프리프로세스 로드(huggingface, timm)
+    hf_model, hf_process = use_huggingface_vit()
+    timm_model, timm_process = use_timm_vit()
+    # 셈플이미지 확보
+    # hf 에서 받은 모델, timm에서 받은 모델로 전용 추론함수에 넣어서 결과를 확인 (ex classify_image_timm(timm_model,timm_process,img)   )
+    #   
