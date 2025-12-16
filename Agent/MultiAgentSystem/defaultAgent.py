@@ -91,27 +91,23 @@ class SpecializedAgent:
         }
 
 # 라우터 클래스
-class Corrdinator:
-    '''에이전트 조정자(메세지 라우터)'''    
+class Coordinator:
     def __init__(self):
-        self.agents : Dict[str, SpecializedAgent] = {}   # 에이전트아이디 : 특화된 에이전트
-    def register_agent(self, agent:SpecializedAgent):
-        '''에이전트 등록'''
+        self.agents: Dict[str, SpecializedAgent] = {}
+    
+    def register_agent(self, agent: SpecializedAgent):
         self.agents[agent.agent_id] = agent
+    
     def route_message(self):
-        '''모든 에이전트의 메세지를 라우팅'''
-        for agent in self.agents.values():  # SpecializedAgent 들...
-            for message in agent._outbox:  # 수신자 에이전트의 정보 및 ..
-                if message.receiver_id in self.agents:  # validation 체크 모든 에이전트의 아이디중에서 수신자 에이전트가 있으면
+        for agent in self.agents.values():
+            for message in agent._outbox:
+                if message.receiver_id in self.agents:
                     receiver = self.agents[message.receiver_id]
                     receiver.receive_message(message)
-                    print(f'  [OK] {message.message_id} :{agent.name} -> {receiver.name}')
+                    print(f'  ✓ {message.message_id}: {agent.name} → {receiver.name}')
+            agent._outbox = []
     
     def process_all_agents(self):
-        '''모든 에이전트의 메시지를 처리'''
         for agent in self.agents.values():
-            agent.process_inbox()   
-    def system_status(self):
-        '''시스템 상태 출력'''
-        for agent in self.agents.values():
-            print(agent.get_info() )
+            if agent._inbox:
+                agent.process_inbox()

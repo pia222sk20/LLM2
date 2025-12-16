@@ -65,7 +65,7 @@ import openai
 import numpy as np
 
 # 기본 구조
-from defaultAgent import AgentState,Message,SpecializedAgent,Corrdinator
+from defaultAgent import AgentState,Message,SpecializedAgent,Coordinator
 
 # RAG 특화 에이전트
 class VectorDBAgent(SpecializedAgent):
@@ -268,8 +268,84 @@ class LLMAgent(SpecializedAgent):
             return {
                 'status':'error',
                 'error': str(e)
-            }
+            }  
+class OrchestratorAgent(SpecializedAgent):
+    """RAG 파이프라인 오케스트레이터"""
+    
+    def __init__(self, name: str, coordinator: Coordinator):
+        super().__init__(name, "orchestration")
+        self.coordinator = coordinator
+        self.vector_agent_id = None
+        self.graph_agent_id = None
+        self.llm_agent_id = None
+    
+    def set_agents(self, vector_id: str, graph_id: str, llm_id: str):
+        self.vector_agent_id = vector_id
+        self.graph_agent_id = graph_id
+        self.llm_agent_id = llm_id
+    
+    def _handle_message(self, message: Message) -> Dict[str, Any]:
+        content = message.content
+        query = content.get('query', '')
         
+        print(f"\n{'='*70}")
+        print(f"[{self.name}] RAG 파이프라인 시작: '{query}'")
+        print(f"{'='*70}")
+        
+        # Step 1: Vector DB 검색
+        self.send_message(self.vector_agent_id, {
+            'query': query,
+            'top_k': 3
+        })
+        self.coordinator.route_message()
+        results = self.coordinator.agents[self.vector_agent_id].process_inbox()
+        
+        vector_results = results[0]['results'] if results else []
+        
+        # Step 2: Knowledge Graph 검색 (첫 번째 결과 기반)
+        graph_results = []
+        if vector_results:
+            movie_id = vector_results[0]['id']
+            self.send_message(self.graph_agent_id, {
+                'query_type': 'related',
+                'entity_id': movie_id
+            })
+            self.coordinator.route_message()
+            graph_res = self.coordinator.agents[self.graph_agent_id].process_inbox()
+            if graph_res:
+                graph_results = graph_res[0].get('related', [])
+        
+        # Step 3: 컨텍스트 통합
+        context = []
+        for item in vector_results:
+            context.append(item['content'])
+        
+        for item in graph_results[:3]:
+            context.append(f"{item['name']} ({item['type']})")
+        
+        # Step 4: LLM 응답 생성
+        self.send_message(self.llm_agent_id, {
+            'query': query,
+            'context': context
+        })
+        self.coordinator.route_message()
+        llm_results = self.coordinator.agents[self.llm_agent_id].process_inbox()
+        
+        final_answer = llm_results[0].get('answer', '') if llm_results else ''
+        
+        print(f"\n{'='*70}")
+        print(f"최종 답변:\n{final_answer}")
+        print(f"{'='*70}\n")
+        
+        return {
+            'status': 'completed',
+            'query': query,
+            'answer': final_answer,
+            'sources': {
+                'vector_results': len(vector_results),
+                'graph_results': len(graph_results)
+            }
+        }
 
 
 
