@@ -67,14 +67,14 @@ class SpecializedAgent:
         return message
     def process_inbox(self) ->list[Dict[str,Any]]:
         '''받은 메세지 처리'''
-        self._state = self.set_state(AgentState.PROCESSING)
+        self.set_state(AgentState.PROCESSING)
         results = []
         for message in self._inbox:
             result = self._handle_message(message)
             results.append(result)
         
         self._inbox = []  # 처리된 메세지 제거
-        self._state = self.set_state(AgentState.COMPLETED)
+        self.set_state(AgentState.COMPLETED)
         return results
     def _handle_message(self, message:Message) -> Dict[str,Any]:
         '''메세지 처리(오버라이드 가능)'''
@@ -84,7 +84,7 @@ class SpecializedAgent:
             'content' : message.content
         }
     def get_state(self) -> str:
-        return self._state
+        return self._state.value
     def set_state(self,state:AgentState):
         self._state = state
     def get_info(self)->Dict[str,Any]:
