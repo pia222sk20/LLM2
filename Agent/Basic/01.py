@@ -201,3 +201,22 @@ class SimpleAgent:
         print(f"  - 실패: {stats['error_count']}회")
         print(f"  - 평균 시간: {stats['avg_time']:.3f}초")
         print("="*60 + "\n")
+
+if __name__ == '__main__':
+    # 에이전트 생성
+    agent = SimpleAgent('Worker','simple')
+    test_case = [
+        {'action' : 'greet', 'name':'hong-gil-dong'},
+        {'action' : 'add', 'a':10,'b':20},
+        {'action' : 'uppercase', 'text':'hello-world'},
+        {'action' : 'count_words', 'text':'hello my name is hong'},
+            ]
+    for task in test_case:
+        result = agent.excute(task)
+        if result['success']:
+            print(f"[OK] : {result['output']}")
+        else:
+            print(f"[FAIL] : {result['error']}")
+    # 에이전트 정보 출력
+    agent.print_info()
+
