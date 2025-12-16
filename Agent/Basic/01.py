@@ -137,6 +137,28 @@ class SimpleAgent:
             return result
         else:
             raise ValueError(f'알수 없는 작업 : {action}')
+    # 검증 및 기록
+    def _validate_input(self, input_data:Dict[str,Any]) -> bool:
+        '''입력 검증'''
+        if not isinstance(input_data, dict):
+            print('[ERROR] 입력은 딕셔너리여야 합니다.')
+            return False
+        if 'action' not in input_data:
+            print('[ERROR] action 키는 필수입니다..')
+            return False
+        return True
+    def _add_to_history(self, action:str , status:str, duration:float, error:Optional[str] = None):
+        '''이력추가'''
+        record = ExcutionRecord(
+            timestamp=datetime.now().isoformat(),
+            action=action,
+            status=status,
+            duration=duration,
+            error=error
+        )
+        self._history.append(record)
+        if len(self._history) > 100:  # 최대 100개만 유지
+            self._history.pop(0)
 
 
 
