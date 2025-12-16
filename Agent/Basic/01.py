@@ -60,7 +60,7 @@ class SimpleAgent:
         self._history : List[ExcutionRecord] = []
         self._stats = AgentStats()
         
-        print(f'[SUCCESS] {self.name} 에이전트 생성 (ID : {self.angent_id})')
+        print(f'[SUCCESS] {self.name} 에이전트 생성 (ID : {self.agent_id})')
     # 상태 관리
     def get_state(self) ->str:
         '''현재 상태 반환'''        
@@ -90,7 +90,7 @@ class SimpleAgent:
 
             return {
                 'success' : True,
-                'agent_id' : self.angent_id,
+                'agent_id' : self.agent_id,
                 'action' : action,
                 'output' : result,
                 'duration' : duration
@@ -105,7 +105,7 @@ class SimpleAgent:
             self._update_stats(success=False,duration=duration)
             return {
                 'success' : False,
-                'agent_id' : self.angent_id,
+                'agent_id' : self.agent_id,
                 'error' : error_msg,                
                 'duration' : duration
             }
