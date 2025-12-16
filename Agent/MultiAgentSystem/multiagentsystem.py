@@ -399,4 +399,3 @@ def run_rag_system():
     print("\n" + "="*70)
     print("시스템 종료")
     print("="*70)
-    
