@@ -84,8 +84,30 @@ class SimpleAgent:
             # 성공 처리
             self.set_state(AgentState.COMPLETED)
             duration = (datetime.now() - start_time).total_seconds()
+            
+            self._add_to_history(action,'success', duration)
+            self._update_stats(success=True,duration=duration)
+
+            return {
+                'success' : True,
+                'agent_id' : self.angent_id,
+                'action' : action,
+                'output' : result,
+                'duration' : duration
+            }
 
         except Exception as e:
-            pass
+            # 오류처리
+            self.set_state(AgentState.ERROR)
+            duration = (datetime.now() - start_time).total_seconds()
+            error_msg = str(e)
+            self._add_to_history(action,'error', duration,error_msg)
+            self._update_stats(success=False,duration=duration)
+            return {
+                'success' : False,
+                'agent_id' : self.angent_id,
+                'error' : error_msg,                
+                'duration' : duration
+            }
 
 
