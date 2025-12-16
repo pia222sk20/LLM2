@@ -102,13 +102,22 @@ class SpecializedAgent:
 class Corrdinator:
     '''에이전트 조정자(메세지 라우터)'''    
     def __init__(self):
-        self.agents : Dict[str, SpecializedAgent] = {}
+        self.agents : Dict[str, SpecializedAgent] = {}   # 에이전트아이디 : 특화된 에이전트
     def register_agent(self, agent:SpecializedAgent):
         '''에이전트 등록'''
         self.agents[agent.id] = agent
     def route_message(self):
         '''모든 에이전트의 메세지를 라우팅'''
+        for agent in self.agents.values():  # SpecializedAgent 들...
+            for message in agent._outbox:  # 수신자 에이전트의 정보 및 ..
+                if message.receiver_id in self.agents:  # validation 체크 모든 에이전트의 아이디중에서 수신자 에이전트가 있으면
+                    receiver = self.agents[message.receiver_id]
+                    receiver.receive_message(message)
+                    print(f'  [OK] {message.message_id} :{agent.name} -> {receiver.name}')
+    
+    def process_all_agents(self):
+        '''모든 에이전트의 메시지를 처리'''
         for agent in self.agents.values():
-            for message in agent._outbox:
-                if message.receiver_id in self.agents:
+            agent.process_inbox()   
 
+# 특화된 에이전트 구현
