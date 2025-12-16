@@ -159,7 +159,45 @@ class SimpleAgent:
         self._history.append(record)
         if len(self._history) > 100:  # 최대 100개만 유지
             self._history.pop(0)
-
-
-
-
+    def _update_stats(self, success:bool, duration:float):
+        '''통계업데이트'''
+        self._stats.total_excuted += 1
+        if success:
+            self._stats.success_count += 1
+        else:
+            self._stats.error_count += 1
+        self._stats.total_time += duration
+        self._stats.avg_time = self._stats.total_time / self._stats.total_excuted
+    # 정보조회
+    def get_info(self) -> Dict[str, Any]:
+        """에이전트 정보 반환"""
+        return {
+            "id": self.agent_id,
+            "name": self.name,
+            "type": self.agent_type,
+            "state": self.get_state(),
+            "history_size": len(self._history),
+            "stats": asdict(self._stats)
+        }
+    
+    def get_history(self) -> List[Dict[str, Any]]:
+        """실행 이력 반환"""
+        return [asdict(record) for record in self._history]
+    
+    def print_info(self):
+        """에이전트 정보 출력"""
+        info = self.get_info()
+        print("\\n" + "="*60)
+        print(f"[INFO] {self.name} 에이전트 정보")
+        print("="*60)
+        print(f"ID: {info['id']}")
+        print(f"타입: {info['type']}")
+        print(f"상태: {info['state']}")
+        print(f"이력 개수: {info['history_size']}")
+        print(f"\\n[STATS] 통계:")
+        stats = info['stats']
+        print(f"  - 총 실행: {stats['total_executed']}회")
+        print(f"  - 성공: {stats['success_count']}회")
+        print(f"  - 실패: {stats['error_count']}회")
+        print(f"  - 평균 시간: {stats['avg_time']:.3f}초")
+        print("="*60 + "\n")
