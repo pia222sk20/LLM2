@@ -121,3 +121,25 @@ class Corrdinator:
             agent.process_inbox()   
 
 # 특화된 에이전트 구현
+class TextProcessorAgent(SpecializedAgent):
+    '''텍스트 처리 에이전트'''
+    def _handle_message(self, message:Message)->Dict[str, Any]:
+        content = message.content
+        operation = content.get('operation','')
+        text = content.get('text','')
+        if operation == 'uppercase':
+            result = text.upper()
+        elif operation == 'lowercase':            
+            result = text.lower()
+        elif operation == 'reverse':            
+            result = text[::-1]
+        else:
+            result = text
+
+        return {
+            'status' : 'processed',
+            'operation' : operation,
+            'input' : text,
+            'output' : result
+        }
+    
