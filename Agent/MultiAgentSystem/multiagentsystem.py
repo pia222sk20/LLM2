@@ -153,4 +153,80 @@ class KnowledgeGraphAgent(SpecializedAgent):
         for movie in SAMPLE_MOVIES:
             # 영화 노드
             self.graph.add_node(movie['id'],type='movie',title=movie['title'],year=movie['year'])
+            # 감독 노드 및 관계
+            director_id = f"dir_{movie['director'].replace(' ','_')}"
+            self.graph.add_node(director_id,type='direct',name=movie['director'])
+            self.graph.add_edge(movie['id'],director_id,relation = 'directed_by')
+
+            # 배우노드 및 관계
+            for actor in movie['actors']:
+                actor_id = f"act_{actor.replace(' ', '_')}"
+                self.graph.add_node(actor_id,type='actor',name=actor)
+                self.graph.add_edge(movie['id'],actor_id,relation = 'starts')
+            # 장르노드 및 관계
+            for genre in movie['genre']:
+                genre_id = f"gen_{genre}"
+                self.graph.add_node(genre_id,type='genre',name=genre)
+                self.graph.add_edge(movie['id'],genre_id,relation = 'genre')
+    
+    def _handle_message(self, message: Message) -> Dict[str, Any]:
+        content = message.content
+        query_type = content.get('query_type', 'related')
+        entity_id = content.get('entity_id', '')
+        
+        print(f"\n[{self.name}] 그래프 검색: {query_type} for {entity_id}")
+        
+        if query_type == 'related':
+            # 관련 엔티티 찾기
+            if entity_id in self.graph:
+                neighbors = list(self.graph.neighbors(entity_id))
+                related = []
+                
+                for neighbor in neighbors:
+                    node_data = self.graph.nodes[neighbor]
+                    edge_data = self.graph.edges[entity_id, neighbor]
+                    related.append({
+                        'id': neighbor,
+                        'type': node_data.get('type', ''),
+                        'name': node_data.get('name', node_data.get('title', '')),
+                        'relation': edge_data.get('relation', '')
+                    })
+                
+                print(f"  {len(related)}개 관련 엔티티 발견")
+                
+                return {
+                    'status': 'found',
+                    'entity_id': entity_id,
+                    'related': related,
+                    'count': len(related)
+                }
+        
+        elif query_type == 'find_by_director':
+            director_name = content.get('director', '')
+            director_id = f"dir_{director_name.replace(' ', '_')}"
             
+            if director_id in self.graph:
+                # 감독의 영화 찾기
+                movies = [n for n in self.graph.predecessors(director_id) 
+                         if self.graph.nodes[n]['type'] == 'movie']
+                
+                movie_list = []
+                for movie_id in movies:
+                    movie_data = self.graph.nodes[movie_id]
+                    movie_list.append({
+                        'id': movie_id,
+                        'title': movie_data['title'],
+                        'year': movie_data['year']
+                    })
+                
+                print(f"  ✓ {len(movie_list)}개 영화 발견")
+                
+                return {
+                    'status': 'found',
+                    'director': director_name,
+                    'movies': movie_list,
+                    'count': len(movie_list)
+                }
+        
+        return {'status': 'not_found'}
+    
