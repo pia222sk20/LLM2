@@ -229,4 +229,47 @@ class KnowledgeGraphAgent(SpecializedAgent):
                 }
         
         return {'status': 'not_found'}
-    
+class LLMAgent(SpecializedAgent):
+    '''LLM 기반 응답 생성 에이전트'''
+    def __init__(self, name:str):
+        super().__init__(name, 'llm_generation')
+    def _handle_message(self, message:Message)->Dict[str, Any]:
+        content = message.content
+        query = content.get('query','')
+        context = content.get('content',[])
+        # 컨텍스트 정리
+        context_text = '\n'.join([  item.get('content',item) for item in context  ])
+        prompt = f'''다음정보를 바탕으로 사용자 질문에 답변해주세요
+        컨텍스트:
+        {context_text}
+
+질문:{query}
+
+답변은 한국어로 작성하고, 제공된 정보만 사용하여 정확하게 답변하세요
+'''
+        try:
+            response = openai.chat.completions.create(model='gpt-4o-mini', 
+                                           messages=[
+                                               {'role':'system','content':'당신은 영화정보 전문가입니다.'},
+                                               {'role':'user','content':prompt}
+                                           ],
+                                           temperature=0.7,
+                                           max_tokens=500
+                                           )
+            answer = response.choices[0].message.content
+            return {
+                'status':'generated',
+                'query':query,
+                'answer':answer,
+                'model':'gpt-4o-mini'
+            }
+        except Exception as e:
+            print(f'llm 생성실패 : {e}')
+            return {
+                'status':'error',
+                'error': str(e)
+            }
+        
+
+
+
