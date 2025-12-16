@@ -119,6 +119,10 @@ class Corrdinator:
         '''모든 에이전트의 메시지를 처리'''
         for agent in self.agents.values():
             agent.process_inbox()   
+    def system_status(self):
+        '''시스템 상태 출력'''
+        for agent in self.agents.values():
+            print(agent.get_info() )
 
 # 특화된 에이전트 구현
 class TextProcessorAgent(SpecializedAgent):
@@ -142,7 +146,7 @@ class TextProcessorAgent(SpecializedAgent):
             'input' : text,
             'output' : result
         }
-class MatchAgent(SpecializedAgent):
+class MathAgent(SpecializedAgent):
     def _handle_message(self, message:Message)->Dict[str,Any]:
         content = message.content
         operation = content.get('operation','')
@@ -188,3 +192,37 @@ class DataAnalyzerAgent(SpecializedAgent):
                 }
         
         return {"status": "invalid_data"}    
+
+if __name__ =='__main__':
+    text_agent = TextProcessorAgent('textbot', 'text processing')
+    math_agent = MathAgent('mathbot','calcualte')
+    analyzer_agent = DataAnalyzerAgent('analyzerbot', 'data analysis')
+
+    # 코디네이터(조정자)에등록
+    corrdiantor = Corrdinator()
+    corrdiantor.register_agent(text_agent)
+    corrdiantor.register_agent(math_agent)
+    corrdiantor.register_agent(analyzer_agent)
+
+    # 메세지 생성 및 전송
+    text_agent.send_message(
+        text_agent.agent_id,
+        {'operation':'uppercase','text':'hong-gil-dong'}
+    )
+    math_agent.send_message(
+        math_agent.agent_id,
+        {'operation':'multiply','a':10,'b':20}        
+    )
+    analyzer_agent.send_message(
+        analyzer_agent.agent_id,
+        {'data':[1,2,3,4,5,6,7,8,9,10]}
+    )
+
+    # 메세지 라우팅  에이전트아이디에 해당하는 메세지를 해당 에이전트의 inbox에 저장
+    corrdiantor.route_message()  
+
+    # 메세지 처리
+    corrdiantor.process_all_agents()
+
+    # 시스템 상태 출력
+    corrdiantor.system_status()
