@@ -52,7 +52,7 @@ class SimpleAgent:
     - 통계 추적
     '''
     def __init__(self,name:str='Agent', agent_type:str = 'simple'):
-        self.angent_id = str(uuid.uuid4())[:8]
+        self.agent_id = str(uuid.uuid4())[:8]
         self.name = name
         self.agent_type = agent_type
 
