@@ -104,7 +104,7 @@ class Coordinator:
                 if message.receiver_id in self.agents:
                     receiver = self.agents[message.receiver_id]
                     receiver.receive_message(message)
-                    print(f'  ✓ {message.message_id}: {agent.name} → {receiver.name}')
+                    print(f'  {message.message_id}: {agent.name} → {receiver.name}')
             agent._outbox = []
     
     def process_all_agents(self):
