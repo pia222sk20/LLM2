@@ -35,7 +35,7 @@ class ExcutionRecord:
 @dataclass
 class AgentStats:
     '''에이전트 통계'''
-    total_excuted:int = 0
+    total_executed:int = 0
     success_count: int = 0
     error_count:int = 0
     total_time:float = 0.0
@@ -161,13 +161,13 @@ class SimpleAgent:
             self._history.pop(0)
     def _update_stats(self, success:bool, duration:float):
         '''통계업데이트'''
-        self._stats.total_excuted += 1
+        self._stats.total_executed += 1
         if success:
             self._stats.success_count += 1
         else:
             self._stats.error_count += 1
         self._stats.total_time += duration
-        self._stats.avg_time = self._stats.total_time / self._stats.total_excuted
+        self._stats.avg_time = self._stats.total_time / self._stats.total_executed
     # 정보조회
     def get_info(self) -> Dict[str, Any]:
         """에이전트 정보 반환"""
@@ -187,14 +187,14 @@ class SimpleAgent:
     def print_info(self):
         """에이전트 정보 출력"""
         info = self.get_info()
-        print("\\n" + "="*60)
+        print("\n" + "="*60)
         print(f"[INFO] {self.name} 에이전트 정보")
         print("="*60)
         print(f"ID: {info['id']}")
         print(f"타입: {info['type']}")
         print(f"상태: {info['state']}")
         print(f"이력 개수: {info['history_size']}")
-        print(f"\\n[STATS] 통계:")
+        print(f"\n[STATS] 통계:")
         stats = info['stats']
         print(f"  - 총 실행: {stats['total_executed']}회")
         print(f"  - 성공: {stats['success_count']}회")
