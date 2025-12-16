@@ -84,7 +84,7 @@ class SpecializedAgent:
             'content' : message.content
         }
     def get_state(self) -> str:
-        return self._state.value
+        return self._state
     def set_state(self,state:AgentState):
         self._state = state
     def get_info(self)->Dict[str,Any]:
@@ -105,7 +105,7 @@ class Corrdinator:
         self.agents : Dict[str, SpecializedAgent] = {}   # 에이전트아이디 : 특화된 에이전트
     def register_agent(self, agent:SpecializedAgent):
         '''에이전트 등록'''
-        self.agents[agent.id] = agent
+        self.agents[agent.agent_id] = agent
     def route_message(self):
         '''모든 에이전트의 메세지를 라우팅'''
         for agent in self.agents.values():  # SpecializedAgent 들...
