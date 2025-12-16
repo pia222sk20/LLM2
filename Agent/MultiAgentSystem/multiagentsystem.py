@@ -347,5 +347,56 @@ class OrchestratorAgent(SpecializedAgent):
             }
         }
 
-
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
+def run_rag_system():
+    # 코디네이터 생성
+    coordinator = Coordinator()
+    # 에이전트 생성 및 등록
+    vector_agent = VectorDBAgent("VectorDB-Agent")
+    graph_agent = KnowledgeGraphAgent("KnowledgeGraph-Agent")
+    llm_agent = LLMAgent("LLM-Agent")
+    orchestrator = OrchestratorAgent("Orchestrator", coordinator)
+    
+    coordinator.register_agent(vector_agent)
+    coordinator.register_agent(graph_agent)
+    coordinator.register_agent(llm_agent)
+    coordinator.register_agent(orchestrator)
+    
+    orchestrator.set_agents(
+        vector_agent.agent_id,
+        graph_agent.agent_id,
+        llm_agent.agent_id
+    )
+    
+    # 테스트 쿼리들
+    test_queries = [
+        "감옥에서 벌어지는 이야기를 다룬 영화 추천해줘",
+        "Christopher Nolan 감독의 영화는?",
+        "범죄와 드라마 장르의 영화 중 평점이 높은 것은?"
+    ]
+    
+    print("\n" + "="*70)
+    print("테스트 쿼리 실행")
+    print("="*70)
+    
+    for i, query in enumerate(test_queries, 1):
+        print(f"\n\n Query {i}: {query}")
+        
+        # 오케스트레이터에게 쿼리 전송
+        orchestrator.send_message(
+            orchestrator.agent_id,
+            {'query': query}
+        )
+        
+        # 메시지 라우팅 및 처리
+        coordinator.route_message()
+        orchestrator.process_inbox()
+        
+        input("\n계속하려면 Enter를 누르세요...")
+    
+    print("\n" + "="*70)
+    print("시스템 종료")
+    print("="*70)
+    
