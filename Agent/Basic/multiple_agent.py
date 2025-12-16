@@ -142,4 +142,49 @@ class TextProcessorAgent(SpecializedAgent):
             'input' : text,
             'output' : result
         }
+class MatchAgent(SpecializedAgent):
+    def _handle_message(self, message:Message)->Dict[str,Any]:
+        content = message.content
+        operation = content.get('operation','')
+        a = content.get('a',0)
+        b = content.get('b',0)
+        if operation == 'add':
+            result = a+b
+        elif operation == 'subtract':
+            result = a-b
+        elif operation == 'multiply':
+            result = a*b
+        elif operation == 'devide':
+            result = a / b if b !=0 else 0
+        else:
+            result = 0
+        return {
+            'status' : 'calculated',
+            'a' : a,
+            'b' : b,
+            'result':result
+        }
+class DataAnalyzerAgent(SpecializedAgent):
+    """데이터 분석 에이전트"""
     
+    def _handle_message(self, message: Message) -> Dict[str, Any]:
+        content = message.content
+        data = content.get("data", [])
+        
+        print(f"   {self.name}: {len(data)}개 항목 분석")
+        
+        if isinstance(data, list) and len(data) > 0:
+            if all(isinstance(x, (int, float)) for x in data):
+                avg = sum(data) / len(data)
+                max_val = max(data)
+                min_val = min(data)
+                
+                return {
+                    "status": "analyzed",
+                    "count": len(data),
+                    "average": avg,
+                    "max": max_val,
+                    "min": min_val
+                }
+        
+        return {"status": "invalid_data"}    
