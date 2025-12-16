@@ -42,3 +42,50 @@ class AgentStats:
     avg_time: float = 0.0
 
 # 에이전트
+import uuid
+from datetime import datetime
+class SimpleAgent:
+    '''기본에이전트 구현
+    - 상태 관리
+    - 작업 실행
+    - 이력 기록
+    - 통계 추적
+    '''
+    def __init__(self,name:str='Agent', agent_type:str = 'simple'):
+        self.angent_id = str(uuid.uuid4())[:8]
+        self.name = name
+        self.agent_type = agent_type
+
+        self._state = AgentState.IDLE
+        self._history : List[ExcutionRecord] = []
+        self._stats = AgentStats()
+        
+        print(f'[SUCCESS] {self.name} 에이전트 생성 (ID : {self.angent_id})')
+    # 상태 관리
+    def get_state(self) ->str:
+        '''현재 상태 반환'''        
+        return self._state.name
+    def set_state(self, state:AgentState):
+        '''현재 상태 변경'''
+        self._state = state
+        print(f'[STATE] [{self._state.name}] 상태 변경 : {self._state.value}')
+    # 작업실행
+    def excute(self, input_data:Dict[str, Any]) -> Dict[str,Any]:
+        '''작업 실행(메인메소드)'''
+        start_time = datetime.now()
+        self.set_state(AgentState.PROCESSING)
+        try:
+            # 입력 검증
+            if not self._validate_input(input_data):
+                raise ValueError('입력 데이터가 유효하지 않습니다.')
+            # 실제 작업 수행
+            action = input_data.get('action','unknown')
+            result = self._process(action, input_data)
+            # 성공 처리
+            self.set_state(AgentState.COMPLETED)
+            duration = (datetime.now() - start_time).total_seconds()
+
+        except Exception as e:
+            pass
+
+
