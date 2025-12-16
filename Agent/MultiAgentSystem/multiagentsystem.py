@@ -236,9 +236,11 @@ class LLMAgent(SpecializedAgent):
     def _handle_message(self, message:Message)->Dict[str, Any]:
         content = message.content
         query = content.get('query','')
-        context = content.get('content',[])
+        # context = content.get('content',[])
+        context = content.get('context','')
         # 컨텍스트 정리
-        context_text = '\n'.join([  item.get('content',item) for item in context  ])
+        # context_text = '\n'.join([  item.get('content',item) for item in context  ])
+        context_text = '\n'.join([  item for item in context  ])
         prompt = f'''다음정보를 바탕으로 사용자 질문에 답변해주세요
         컨텍스트:
         {context_text}
@@ -253,7 +255,8 @@ class LLMAgent(SpecializedAgent):
                                                {'role':'system','content':'당신은 영화정보 전문가입니다.'},
                                                {'role':'user','content':prompt}
                                            ],
-                                           temperature=0.7,
+                                        #    temperature=0.7,
+                                            temperature=0,
                                            max_tokens=500
                                            )
             answer = response.choices[0].message.content
