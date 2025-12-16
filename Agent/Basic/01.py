@@ -109,5 +109,35 @@ class SimpleAgent:
                 'error' : error_msg,                
                 'duration' : duration
             }
+    # 작업 처리
+    def _process(self, action:str, input_data:Dict[str,Any]) -> Any:
+        '''실제 작업수행'''
+        if action == 'greet':
+            name = input_data.get('name', 'Guest')
+            return f'Hello, {name}'
+        elif action == 'add':
+            a = input_data.get('a', 0)
+            b = input_data.get('b', 0)
+            print(f' 계산 : {a} + {b} = {a+b}')
+            return a + b
+        elif action == 'multiply':
+            a = input_data.get('a', 1)
+            b = input_data.get('b', 1)
+            print(f' 계산 : {a} x {b} = {a*b}')
+            return a * b
+        elif action =='uppercase':
+            text = input_data.get('text','')
+            result = text.upper()
+            print(f' 변환 : {text} -> {result}')
+            return result
+        elif action == 'lowercase':
+            text = input_data.get('text','')
+            result = text.lower()
+            print(f' 변환 : {text} -> {result}')
+            return result
+        else:
+            raise ValueError(f'알수 없는 작업 : {action}')
+
+
 
 
