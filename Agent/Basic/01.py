@@ -216,6 +216,9 @@ if __name__ == '__main__':
     # 에이전트 정보 출력
     agent.print_info()
 
-    # 이력 출력
-    
+    # 이력 출력 - 최근 5개
+    history = agent.get_history()
+    for his in history[:5]:
+        print(his) 
+
 
