@@ -212,11 +212,10 @@ if __name__ == '__main__':
         {'action' : 'count_words', 'text':'hello my name is hong'},
             ]
     for task in test_case:
-        result = agent.excute(task)
-        if result['success']:
-            print(f"[OK] : {result['output']}")
-        else:
-            print(f"[FAIL] : {result['error']}")
+        result = agent.excute(task)        
     # 에이전트 정보 출력
     agent.print_info()
+
+    # 이력 출력
+    
 
